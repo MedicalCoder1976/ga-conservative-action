@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     
     // Create test user with email/password
-    const { data: user, error: authError } = await supabase.auth.admin.createUser({
+    const { data, error: authError } = await supabase.auth.admin.createUser({
       email: 'testuser@gaissues.local',
       password: 'testpass123',
       email_confirm: true, // Auto-confirm email
@@ -23,12 +23,14 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!user) {
+    if (!data || !data.user) {
       return NextResponse.json(
         { error: 'Failed to create user' },
         { status: 500 }
       )
     }
+
+    const user = data.user
 
     // Create profile for the user
     const { error: profileError } = await supabase

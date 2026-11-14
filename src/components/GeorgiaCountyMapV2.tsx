@@ -5,10 +5,7 @@ import Link from 'next/link'
 import { MapPin, ChevronDown } from 'lucide-react'
 
 interface County {
-  id: string
   name: string
-  // SVG path data for the county boundary
-  path?: string
   // Center coordinates for click detection
   centerLat: number
   centerLng: number
