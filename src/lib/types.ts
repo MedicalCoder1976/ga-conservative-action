@@ -94,6 +94,9 @@ export type TalkingPoint = {
   content: string
   source: string
   date: string
+  cadence: 'daily' | 'weekly' | 'monthly'
+  county: string | null
+  active: boolean
 }
 
 export type EducationTopic = {
@@ -102,3 +105,16 @@ export type EducationTopic = {
   content: string
   category: string
 }
+
+export type PartyLeader = {
+  id: string
+  name: string
+  title: string
+  level: 'state' | 'regional' | 'county'
+  county: string | null
+  contact_email: string | null
+  contact_phone: string | null
+  district: string | null
+  created_at: string
+}
+

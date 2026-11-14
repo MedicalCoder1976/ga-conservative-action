@@ -1,14 +1,12 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import ElectionResultsCard from '@/components/ElectionResultsCard'
-import DemographicsCard from '@/components/DemographicsCard'
-import ExitPollsCard from '@/components/ExitPollsCard'
-import SuggestedActivitiesList from '@/components/SuggestedActivitiesList'
 import ActivityLogger from '@/components/ActivityLogger'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
+import { ArrowLeft, Users, BarChart3, TrendingUp, Calendar, MapPin } from 'lucide-react'
+import Link from 'next/link'
 
 interface CountyData {
   county: any
@@ -16,6 +14,8 @@ interface CountyData {
   demographics: any
   polls: any[]
   user: any
+  leaders: any[]
+  talkingPoints: any[]
 }
 
 async function getCountyData(county: string, supabase: any) {
@@ -26,6 +26,8 @@ async function getCountyData(county: string, supabase: any) {
       demographics: null,
       polls: [],
       user: null,
+      leaders: [],
+      talkingPoints: [],
     }
   }
 
@@ -34,7 +36,7 @@ async function getCountyData(county: string, supabase: any) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    const [countyRes, electionRes, demographicsRes, pollsRes] = await Promise.all([
+    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes] = await Promise.all([
       supabase
         .from('counties')
         .select('*')
@@ -55,6 +57,19 @@ async function getCountyData(county: string, supabase: any) {
         .from('exit_polls')
         .select('*')
         .eq('county', decodeURIComponent(county)),
+      supabase
+        .from('party_leaders')
+        .select('*')
+        .or(`county.eq.${decodeURIComponent(county)},level.eq.state,level.eq.regional`)
+        .order('level', { ascending: true })
+        .order('title', { ascending: true }),
+      supabase
+        .from('talking_points')
+        .select('*')
+        .or(`county.eq.${decodeURIComponent(county)},county.is.null`)
+        .eq('active', true)
+        .order('date', { ascending: false })
+        .limit(10),
     ])
 
     return {
@@ -63,6 +78,8 @@ async function getCountyData(county: string, supabase: any) {
       demographics: demographicsRes.data || null,
       polls: pollsRes.data || [],
       user: user || null,
+      leaders: leadersRes.data || [],
+      talkingPoints: pointsRes.data || [],
     }
   } catch (error) {
     console.error('Error fetching county data:', error)
@@ -72,6 +89,8 @@ async function getCountyData(county: string, supabase: any) {
       demographics: null,
       polls: [],
       user: null,
+      leaders: [],
+      talkingPoints: [],
     }
   }
 }
@@ -106,6 +125,8 @@ function CountyDashboardContent() {
     demographics: null,
     polls: [],
     user: null,
+    leaders: [],
+    talkingPoints: [],
   })
   const [loading, setLoading] = useState(true)
   const [showIntel, setShowIntel] = useState(false)

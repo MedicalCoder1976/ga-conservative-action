@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import { GeorgiaProperMap } from '@/components/GeorgiaProperMap'
+import { GeorgiaMapView } from '@/components/GeorgiaMapView'
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -24,12 +24,12 @@ export default function HomePage() {
             </div>
             <div>
               <div className="font-black text-xl text-slate-900">GA Issues</div>
-              <div className="text-xs text-red-600 font-bold">The issues are real. The game isn't.</div>
+              <div className="text-xs text-red-600 font-bold">Community Engagement Platform</div>
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#map" className="text-slate-700 hover:text-red-600 transition font-semibold">See the Map</a>
-            <a href="#how-it-works" className="text-slate-700 hover:text-red-600 transition font-semibold">How It Works</a>
+            <a href="#map" className="text-slate-700 hover:text-red-600 transition font-semibold">View Map</a>
+            <a href="#features" className="text-slate-700 hover:text-red-600 transition font-semibold">Features</a>
           </nav>
           <Link
             href="/auth/login"
@@ -99,7 +99,7 @@ export default function HomePage() {
 
             {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
             <div className="order-1 lg:order-2" id="map">
-              <GeorgiaProperMap />
+              <GeorgiaMapView />
             </div>
           </div>
         </div>
