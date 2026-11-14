@@ -143,32 +143,32 @@ export default function ActivityLogger({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Log Activity</h2>
+    <div className="w-full max-w-2xl mx-auto p-6 bg-white border-2 border-red-600 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4 text-slate-900">Log Activity</h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+        <div className="mb-4 p-4 bg-red-100 text-red-700 border-2 border-red-600 rounded-lg text-sm font-semibold">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">
+        <div className="mb-4 p-4 bg-red-50 text-red-700 border-2 border-red-600 rounded-lg text-sm font-semibold">
           Activity logged successfully! 🎉
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Activity Type Dropdown */}
         <div>
-          <label htmlFor="activity-type" className="block text-sm font-medium mb-1">
+          <label htmlFor="activity-type" className="block text-sm font-bold mb-2 text-slate-900">
             Activity Type
           </label>
           <select
             id="activity-type"
             value={selectedActivityId}
             onChange={(e) => setSelectedActivityId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border-2 border-red-600 bg-white text-slate-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 font-semibold"
             disabled={loading}
           >
             <option value="">Select an activity...</option>
@@ -182,8 +182,8 @@ export default function ActivityLogger({
 
         {/* Activity Description (read-only, shows when selected) */}
         {selectedActivityId && (
-          <div className="p-3 bg-blue-50 rounded-md">
-            <p className="text-sm text-gray-700">
+          <div className="p-4 bg-red-50 border-2 border-red-600 rounded-lg">
+            <p className="text-sm text-slate-900 font-semibold">
               {suggestedActivities.find((a) => a.id === selectedActivityId)
                 ?.description}
             </p>
@@ -192,7 +192,7 @@ export default function ActivityLogger({
 
         {/* Photo Upload */}
         <div>
-          <label htmlFor="photo" className="block text-sm font-medium mb-1">
+          <label htmlFor="photo" className="block text-sm font-bold mb-2 text-slate-900">
             Upload Photo
           </label>
           <input
@@ -201,11 +201,11 @@ export default function ActivityLogger({
             type="file"
             accept="image/*"
             onChange={handlePhotoChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border-2 border-red-600 bg-white text-slate-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 font-semibold"
             disabled={loading}
           />
           {photo && (
-            <p className="mt-2 text-sm text-green-600">
+            <p className="mt-2 text-sm text-red-700 font-bold">
               ✓ {photo.name} selected
             </p>
           )}
@@ -213,7 +213,7 @@ export default function ActivityLogger({
 
         {/* Notes Textarea */}
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium mb-1">
+          <label htmlFor="notes" className="block text-sm font-bold mb-2 text-slate-900">
             Notes (Optional)
           </label>
           <textarea
@@ -221,7 +221,7 @@ export default function ActivityLogger({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add any additional details about this activity..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border-2 border-red-600 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 font-semibold"
             rows={4}
             disabled={loading}
           />
@@ -231,7 +231,7 @@ export default function ActivityLogger({
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="w-full px-6 py-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-lg"
         >
           {loading ? 'Logging Activity...' : 'Log Activity'}
         </button>
