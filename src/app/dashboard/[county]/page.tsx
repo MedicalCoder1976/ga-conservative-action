@@ -253,14 +253,17 @@ function CountyDashboardContent() {
         <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
           <button
             onClick={() => setShowIntel(!showIntel)}
-            className="w-full flex justify-between items-center mb-6 hover:opacity-80 transition"
+            className="w-full flex justify-between items-center mb-6 hover:opacity-70 active:opacity-50 transition px-4 py-2 rounded cursor-pointer"
+            type="button"
           >
             <h3 className="text-2xl font-black text-slate-300">📊 COUNTY INTEL</h3>
-            <span className="text-2xl">{showIntel ? '▼' : '▶'}</span>
+            <span className="text-3xl font-black text-slate-300" style={{ transition: 'transform 0.3s' }}>
+              {showIntel ? '▼' : '▶'}
+            </span>
           </button>
 
           {showIntel && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in duration-300">
               {/* Election Results */}
               {election && (
                 <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-red-500">
@@ -382,8 +385,8 @@ function CountyDashboardContent() {
           )}
         </div>
 
-        {/* Activity Logger */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8">
+        {/* Activity Logger - Show login prompt AFTER user tries to log */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
           <h3 className="text-2xl font-black text-green-400 mb-6">✍️ LOG ACTIVITY</h3>
           {data.user ? (
             <ActivityLogger
@@ -394,11 +397,28 @@ function CountyDashboardContent() {
               }}
             />
           ) : (
-            <div className="bg-slate-700/50 rounded-lg p-6 border-2 border-dashed border-slate-600 text-center">
-              <p className="text-slate-400">Please log in to log activities</p>
+            <div className="bg-white border-2 border-red-600 rounded-lg p-8 text-center">
+              <div className="mb-6">
+                <div className="text-5xl mb-4">📝</div>
+                <h4 className="text-2xl font-black text-slate-900 mb-3">Ready to Log Activities?</h4>
+                <p className="text-slate-700 font-semibold text-lg mb-4">
+                  Sign in to save your progress, earn points, and track your impact over time.
+                </p>
+              </div>
+              <a 
+                href="/auth/login" 
+                className="inline-block px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-lg transition"
+              >
+                Sign In to Start Logging
+              </a>
+              <p className="text-slate-600 text-sm mt-6 font-semibold">
+                You can view all county data without signing in. Only your activity logs require a login.
+              </p>
             </div>
           )}
         </div>
+
+        {/* Remove the separate login prompt card - it's now integrated above */}
       </div>
     </div>
   )

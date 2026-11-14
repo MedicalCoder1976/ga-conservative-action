@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ElectionYear {
@@ -19,17 +18,24 @@ const ELECTION_YEARS: ElectionYear[] = [
 ]
 
 export function GeorgiaMapVisual() {
-  const router = useRouter()
   const [selectedYear, setSelectedYear] = useState(2026)
   const [hoveredCounty, setHoveredCounty] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const currentElection = ELECTION_YEARS.find((e) => e.year === selectedYear) || ELECTION_YEARS[ELECTION_YEARS.length - 1]
   const blueIntensity = currentElection.bluePercentage / 100 // 0 to 1
 
   // Simplified Georgia county map using SVG paths
   // This is a basic outline of Georgia counties
-  const handleCountyClick = (countyName: string) => {
-    router.push(`/dashboard/${encodeURIComponent(countyName)}`)
+  const handleCountyClick = async (countyName: string) => {
+    setIsLoading(true)
+    try {
+      // Redirect to login to authenticate first
+      window.location.href = `/auth/login?redirect=/dashboard/${encodeURIComponent(countyName)}`
+    } catch (error) {
+      console.error('Navigation error:', error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -107,11 +113,12 @@ export function GeorgiaMapVisual() {
       <div className="mb-8">
         <svg
           viewBox="0 0 400 500"
-          className="w-full h-auto max-w-2xl mx-auto"
-          style={{ minHeight: '400px' }}
+          className="w-full h-auto max-w-2xl mx-auto bg-slate-900 rounded-lg"
+          style={{ minHeight: '400px', backgroundColor: '#0f172a' }}
+          preserveAspectRatio="xMidYMid meet"
         >
           {/* Background */}
-          <rect width="400" height="500" fill="#0f172a" rx="8" />
+          <rect width="400" height="500" fill="#1e293b" rx="8" />
 
           {/* Gradient Definition - showing shift from red to blue */}
           <defs>

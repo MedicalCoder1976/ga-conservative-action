@@ -4,8 +4,8 @@ import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@s
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for public routes
-  const publicRoutes = ['/', '/auth', '/api/auth']
+  // Skip middleware for public routes and dashboard (county data is public)
+  const publicRoutes = ['/', '/auth', '/api/auth', '/dashboard', '/privacy', '/terms', '/contact', '/education']
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next()
   }
