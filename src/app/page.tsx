@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import { GeorgiaSVGMap } from '@/components/GeorgiaSVGMap'
+import { GeorgiaMapVisual } from '@/components/GeorgiaMapVisual'
 
 export default function HomePage() {
   const router = useRouter()
@@ -21,92 +21,89 @@ export default function HomePage() {
       <header className="relative z-50 sticky top-0 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center font-black">
+            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-blue-400 rounded-lg flex items-center justify-center font-black text-white">
               GA
             </div>
             <div>
               <div className="font-black text-lg">GA Issues</div>
-              <div className="text-xs text-blue-400">Community Engagement</div>
+              <div className="text-xs text-red-400 font-bold">The issues are real. The game isn't.</div>
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-8">
+            <a href="#map" className="text-slate-300 hover:text-white transition font-medium">See the Map</a>
             <a href="#how-it-works" className="text-slate-300 hover:text-white transition font-medium">How It Works</a>
-            <a href="#why" className="text-slate-300 hover:text-white transition font-medium">Why It Matters</a>
           </nav>
           <Button
             onClick={() => router.push('/auth/login')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-lg transition"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg transition"
           >
-            Get Started
+            Join Now
           </Button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 sm:py-32">
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <div className="mb-6 inline-block">
-            <span className="px-4 py-2 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-semibold">
-              ✨ Community Engagement Platform
-            </span>
-          </div>
-          
-          <h1 className="text-5xl sm:text-7xl font-black mb-6 leading-tight tracking-tight">
-            Track Local Issues.
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500">
-              Build Community.
-            </span>
-            <br />
-            Make Impact.
-          </h1>
-          
-          <p className="text-xl sm:text-2xl text-slate-300 mb-12 leading-relaxed max-w-2xl mx-auto">
-            Connect with your Georgia community. Track local issues. Engage with neighbors. Drive real change in your county.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button
-              onClick={() => router.push('/auth/login')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 text-lg rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105"
-            >
-              Start Engaging <ArrowRight className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="outline"
-              className="border-slate-600 text-white hover:bg-slate-800 font-bold px-8 py-4 text-lg rounded-lg"
-            >
-              Learn More
-            </Button>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mt-16 pt-16 border-t border-slate-800">
-            {[
-              { label: '159 Counties', value: 'All of Georgia' },
-              { label: 'Real Data', value: 'Election & Demographics' },
-              { label: 'Community', value: 'Civic Engagement' },
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="text-2xl sm:text-3xl font-black text-blue-400 mb-1">{stat.label}</div>
-                <div className="text-sm text-slate-400">{stat.value}</div>
+      {/* HERO + MAP LAYOUT: Desktop side-by-side, Mobile stacked */}
+      <section className="relative z-10">
+        <div className="max-w-7xl mx-auto px-6 py-16 sm:py-24">
+          {/* Mobile-first: Map at top, then hero (responsive grid) */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* LEFT: Hero Text (shown below on mobile, left on desktop) */}
+            <div className="order-2 lg:order-1">
+              <div className="mb-6 inline-block">
+                <span className="px-4 py-2 rounded-full bg-red-600/20 border border-red-500/30 text-red-300 text-sm font-semibold">
+                  📊 Real Data, Real Impact
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              
+              <h1 className="text-5xl sm:text-6xl font-black mb-6 leading-tight tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-blue-400">
+                  The Issues
+                </span>
+                <br />
+                Are Real.
+                <br />
+                <span className="text-slate-300">The Game Isn't.</span>
+              </h1>
+              
+              <p className="text-lg sm:text-xl text-slate-300 mb-8 leading-relaxed max-w-xl">
+                Georgia is changing. Watch election trends from 2012 to 2026. Understand what drives political shifts in your county. Track local issues and engage with your community.
+              </p>
 
-      {/* Map Preview Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-        <div className="bg-gradient-to-b from-slate-900/50 to-slate-950/50 border border-slate-800 rounded-2xl p-8 sm:p-12 overflow-hidden">
-          <div className="mb-8">
-            <h2 className="text-3xl sm:text-4xl font-black mb-2">Interactive Georgia Map</h2>
-            <p className="text-slate-400">Click any county to view local data, track issues, and engage with your community</p>
-          </div>
-          
-          {/* Interactive Georgia Map */}
-          <div className="bg-slate-800/40 rounded-xl overflow-hidden">
-            <GeorgiaSVGMap />
+              <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                <Button
+                  onClick={() => router.push('/auth/login')}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 text-lg rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105"
+                >
+                  Explore Now <ArrowRight className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-slate-600 text-white hover:bg-slate-800 font-bold px-8 py-4 text-lg rounded-lg"
+                  onClick={() => document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  View Map
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-slate-800">
+                {[
+                  { label: '159 Counties', value: 'All of Georgia' },
+                  { label: '5 Elections', value: '2012 to 2026' },
+                  { label: 'Real Data', value: 'Live Updates' },
+                ].map((stat, i) => (
+                  <div key={i}>
+                    <div className="text-2xl sm:text-3xl font-black text-blue-400">{stat.label}</div>
+                    <div className="text-xs sm:text-sm text-slate-400">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
+            <div className="order-1 lg:order-2" id="map">
+              <GeorgiaMapVisual />
+            </div>
           </div>
         </div>
       </section>
@@ -114,8 +111,8 @@ export default function HomePage() {
       {/* How It Works */}
       <section id="how-it-works" className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-black mb-4">How It Works</h2>
-          <p className="text-xl text-slate-300">Simple steps to engage with your community</p>
+          <h2 className="text-4xl sm:text-5xl font-black mb-4">Get Involved</h2>
+          <p className="text-xl text-slate-300">Simple steps to understand what's happening in Georgia</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -123,55 +120,61 @@ export default function HomePage() {
             {
               num: '01',
               title: 'Sign In',
-              desc: 'Create your account with Google, Apple, Facebook, or Email. Takes 30 seconds.',
+              desc: 'Just your social account (Google, Apple, Facebook) or email. No complex forms needed.',
               icon: '🔐',
             },
             {
               num: '02',
-              title: 'Choose Your County',
-              desc: 'Select the Georgia county you care about most to see local data and issues.',
-              icon: '📍',
+              title: 'View the Map',
+              desc: 'See how Georgia has changed from 2012 to 2026. Watch the blue rising.',
+              icon: '📊',
             },
             {
               num: '03',
-              title: 'Explore & Engage',
-              desc: 'Track issues, learn about local topics, log your civic activities, and build connections.',
-              icon: '✨',
+              title: 'Choose Your County',
+              desc: 'Focus on the county that matters to you. Track local data and issues.',
+              icon: '📍',
             },
           ].map((step, i) => (
             <div
               key={i}
-              className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700 hover:border-blue-500/50 rounded-xl p-8 transition group"
+              className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700 hover:border-red-500/50 rounded-xl p-8 transition group"
             >
               <div className="flex items-start gap-4 mb-4">
                 <span className="text-4xl">{step.icon}</span>
-                <span className="text-3xl font-black text-blue-400">{step.num}</span>
+                <span className="text-3xl font-black text-red-400">{step.num}</span>
               </div>
-              <h3 className="text-xl font-black mb-3 group-hover:text-blue-400 transition">{step.title}</h3>
+              <h3 className="text-xl font-black mb-3 group-hover:text-red-400 transition">{step.title}</h3>
               <p className="text-slate-400">{step.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Why It Matters */}
+      {/* Why Georgia Matters */}
       <section id="why" className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-4xl sm:text-5xl font-black mb-6">Why Local Engagement Matters</h2>
+            <h2 className="text-4xl sm:text-5xl font-black mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-blue-400">
+                Georgia Is Changing
+              </span>
+            </h2>
             <p className="text-xl text-slate-300 mb-6 leading-relaxed">
-              Real change starts at the community level. By tracking local issues and engaging with your neighbors, you can influence policy, build awareness, and create meaningful impact in your county.
+              From 2012 to 2026, Georgia shifted 27 points toward Democratic voting. That's not politics—it's demographics. It's generation change. It's people moving, getting older, or changing their minds.
+            </p>
+            <p className="text-lg text-slate-300 mb-6 leading-relaxed">
+              Understanding these patterns helps you understand what's actually happening in your county.
             </p>
             <ul className="space-y-4">
               {[
-                'Track real election data and demographics',
-                'Learn about local civic issues',
-                'Connect with community members',
-                'Share your voice and insights',
-                'Build a stronger, more informed community',
+                'See real election data from 2012-2026',
+                'Understand demographic shifts',
+                'Track what matters in your county',
+                'Engage based on facts, not politics',
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-slate-300">
-                  <ChevronRight className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-red-400 flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -180,12 +183,12 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 gap-4">
             {[
-              { icon: '📊', label: 'Real Data', desc: 'Election results & demographics' },
-              { icon: '👥', label: 'Community', desc: 'Connect with neighbors' },
-              { icon: '💡', label: 'Learning', desc: 'Civic education resources' },
-              { icon: '🌟', label: 'Impact', desc: 'Drive local change' },
+              { icon: '📊', label: 'Election Data', desc: '5 elections tracked' },
+              { icon: '📈', label: 'Trends', desc: 'What\'s changing' },
+              { icon: '👥', label: 'Demographics', desc: 'Who lives here' },
+              { icon: '🎯', label: 'Insights', desc: 'What it means' },
             ].map((item, i) => (
-              <div key={i} className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 rounded-lg p-6 text-center hover:border-blue-500/50 transition">
+              <div key={i} className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 rounded-lg p-6 text-center hover:border-red-500/50 transition">
                 <div className="text-4xl mb-3">{item.icon}</div>
                 <h4 className="font-black mb-1">{item.label}</h4>
                 <p className="text-sm text-slate-400">{item.desc}</p>
