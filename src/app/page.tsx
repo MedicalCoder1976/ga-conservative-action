@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import { GeorgiaMapView } from '@/components/GeorgiaMapView'
+import { GeorgiaRealMap } from '@/components/GeorgiaRealMap'
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -99,7 +99,7 @@ export default function HomePage() {
 
             {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
             <div className="order-1 lg:order-2" id="map">
-              <GeorgiaMapView />
+              <GeorgiaRealMap />
             </div>
           </div>
         </div>
