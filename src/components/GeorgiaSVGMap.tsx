@@ -27,19 +27,23 @@ export function GeorgiaSVGMap() {
         return
       }
 
-      const countyMap = new Map<string, County>()
-      if (data) {
-        data.forEach((row: any) => {
-          const county: County = {
-            name: row.name,
-            fips: row.fips,
-            activity_score: row.activity_score || 0,
-            color_intensity: row.color_intensity || 0,
-            last_demographics_refresh: row.last_demographics_refresh || new Date().toISOString().split('T')[0],
-          }
-          countyMap.set(county.name, county)
-        })
+      if (!data || data.length === 0) {
+        console.warn('No counties found in database, using mock data')
+        initializeMockCounties()
+        return
       }
+
+      const countyMap = new Map<string, County>()
+      data.forEach((row: any) => {
+        const county: County = {
+          name: row.name,
+          fips: row.fips,
+          activity_score: row.activity_score || 0,
+          color_intensity: row.color_intensity || 0,
+          last_demographics_refresh: row.last_demographics_refresh || new Date().toISOString().split('T')[0],
+        }
+        countyMap.set(county.name, county)
+      })
       setCounties(countyMap)
     } catch (err) {
       console.error('Error fetching counties:', err)
