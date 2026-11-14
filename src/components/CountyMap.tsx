@@ -12,6 +12,7 @@ export function CountyMap() {
   const [counties, setCounties] = useState<Map<string, County>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [hoveredCounty, setHoveredCounty] = useState<string | null>(null)
 
   const fetchCounties = async () => {
     try {
@@ -23,7 +24,6 @@ export function CountyMap() {
       if (err) {
         console.error('Error fetching counties:', err)
         setError('Failed to load counties data')
-        // Use mock data for demo purposes
         initializeMockCounties()
         return
       }
@@ -39,7 +39,6 @@ export function CountyMap() {
     } catch (err) {
       console.error('Error fetching counties:', err)
       setError('Failed to load counties data')
-      // Use mock data for demo purposes
       initializeMockCounties()
     } finally {
       setLoading(false)
@@ -47,7 +46,6 @@ export function CountyMap() {
   }
 
   const initializeMockCounties = () => {
-    // Initialize with mock data for testing/demo
     const countyMap = new Map<string, County>()
     GEORGIA_COUNTIES.forEach((countyName, index) => {
       const mockScore = Math.floor(Math.random() * 256)
@@ -64,10 +62,7 @@ export function CountyMap() {
 
   useEffect(() => {
     fetchCounties()
-
-    // Set up refresh interval (every 10 seconds)
     const interval = setInterval(fetchCounties, 10000)
-
     return () => clearInterval(interval)
   }, [])
 
@@ -98,34 +93,36 @@ export function CountyMap() {
           const countyData = counties.get(countyName)
           const activityScore = countyData?.activity_score ?? 0
           const backgroundColor = getCountyColor(activityScore)
+          const isHovered = hoveredCounty === countyName
 
           return (
             <button
               key={countyName}
               onClick={() => handleCountyClick(countyName)}
+              onMouseEnter={() => setHoveredCounty(countyName)}
+              onMouseLeave={() => setHoveredCounty(null)}
               style={{
                 backgroundColor: backgroundColor,
-                transition: 'all 0.3s ease-in-out',
+                transform: isHovered ? 'scale(1.08)' : 'scale(1)',
               }}
               className="
                 p-3 md:p-4
                 rounded-lg
                 text-white
-                font-semibold
+                font-bold
                 text-xs md:text-sm
                 text-center
                 shadow-md
-                hover:shadow-lg
-                hover:scale-105
+                hover:shadow-xl
                 active:scale-95
                 transition-all
-                duration-200
+                duration-150
                 min-h-16 md:min-h-20
                 flex items-center justify-center
                 cursor-pointer
-                border border-slate-300
+                border-2 border-white
               "
-              title={`${countyName}: ${activityScore} points`}
+              title={`${countyName}: ${activityScore} points - Click to view details`}
             >
               <span className="break-words">{countyName}</span>
             </button>
@@ -133,37 +130,37 @@ export function CountyMap() {
         })}
       </div>
 
-      <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-        <h3 className="font-semibold text-slate-900 mb-2">Color Legend</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+      <div className="mt-8 p-6 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200">
+        <h3 className="font-bold text-slate-900 mb-4 text-lg">Activity Level Guide</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded border border-slate-300"
+              className="w-16 h-12 rounded-lg border-2 border-white shadow-md flex-shrink-0"
               style={{ backgroundColor: 'rgb(0, 0, 255)' }}
             />
             <div>
-              <p className="font-medium">Blue (0 points)</p>
-              <p className="text-slate-600">No activity yet</p>
+              <p className="font-bold text-slate-900">Blue</p>
+              <p className="text-slate-600">0 points - No activity</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded border border-slate-300"
+              className="w-16 h-12 rounded-lg border-2 border-white shadow-md flex-shrink-0"
               style={{ backgroundColor: 'rgb(128, 0, 127)' }}
             />
             <div>
-              <p className="font-medium">Purple (128 points)</p>
-              <p className="text-slate-600">Moderate activity</p>
+              <p className="font-bold text-slate-900">Purple</p>
+              <p className="text-slate-600">128 points - Growing momentum</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded border border-slate-300"
+              className="w-16 h-12 rounded-lg border-2 border-white shadow-md flex-shrink-0"
               style={{ backgroundColor: 'rgb(255, 0, 0)' }}
             />
             <div>
-              <p className="font-medium">Red (255+ points)</p>
-              <p className="text-slate-600">High activity</p>
+              <p className="font-bold text-slate-900">Red</p>
+              <p className="text-slate-600">255+ points - High activity!</p>
             </div>
           </div>
         </div>

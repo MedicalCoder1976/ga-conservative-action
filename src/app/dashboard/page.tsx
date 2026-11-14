@@ -2,43 +2,39 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { createClient } from '@/lib/supabase/client'
+import { Card, CardContent } from '@/components/ui/card'
+import { GeorgiaSVGMap } from '@/components/GeorgiaSVGMap'
+import { MapPin, Search, Zap, Trophy } from 'lucide-react'
 
 interface County {
   name: string
   fips: string
   activity_score: number
+  color_intensity: number
 }
 
 export default function DashboardPage() {
   const router = useRouter()
   const [counties, setCounties] = useState<County[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCounty, setSelectedCounty] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchCounties = async () => {
       try {
         const supabase = createClient()
-
         const { data, error } = await supabase
           .from('counties')
-          .select('name, fips, activity_score')
-          .order('name')
+          .select('*')
+          .order('activity_score', { ascending: false })
 
-        if (error) {
-          console.error('Error fetching counties:', error)
-          setCounties(mockCounties)
-        } else {
-          setCounties(data || mockCounties)
-        }
+        if (error) throw error
+        setCounties(data || [])
       } catch (err) {
-        console.error('Error:', err)
-        setCounties(mockCounties)
+        console.error('Error fetching counties:', err)
       } finally {
         setLoading(false)
       }
@@ -51,101 +47,176 @@ export default function DashboardPage() {
     county.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const handleSelectCounty = (countyName: string) => {
-    setSelectedCounty(countyName)
-    router.push(`/dashboard/${encodeURIComponent(countyName)}`)
-  }
+  const topCounties = counties.slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-            County Dashboard
-          </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400">
-            Select a county to view election results, demographics, and exit polls
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-8">
-          <Input
-            type="text"
-            placeholder="Search counties..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 text-base"
-          />
-        </div>
-
-        {/* Counties Grid */}
-        {loading ? (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-slate-500">Loading counties...</p>
-            </CardContent>
-          </Card>
-        ) : filteredCounties.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-slate-500">No counties found</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCounties.map((county) => (
-              <Card
-                key={county.name}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleSelectCounty(county.name)}
-              >
-                <CardHeader>
-                  <CardTitle className="text-xl">{county.name}</CardTitle>
-                  <CardDescription>FIPS: {county.fips}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Activity Score
-                      </p>
-                      <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                        {county.activity_score}
-                      </p>
-                    </div>
-                    <Button
-                      variant="default"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleSelectCounty(county.name)
-                      }}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black">Georgia Issues Map</h1>
+            <p className="text-xs sm:text-sm text-slate-400">Track local engagement in every county</p>
           </div>
-        )}
-
-        {/* Footer Info */}
-        <div className="mt-12 text-center text-sm text-slate-500 dark:text-slate-400">
-          <p>Showing {filteredCounties.length} counties</p>
+          <Button
+            variant="outline"
+            onClick={() => router.push('/')}
+            className="border-slate-600 text-slate-300 hover:bg-slate-800"
+          >
+            ← Home
+          </Button>
         </div>
-      </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Large Map */}
+        <div className="mb-12 sm:mb-16 bg-gradient-to-b from-slate-900/50 to-slate-950/50 rounded-2xl border border-slate-800 p-6 sm:p-8 shadow-2xl">
+          <div className="mb-4">
+            <h2 className="text-2xl sm:text-3xl font-black text-white">All 159 Counties</h2>
+            <p className="text-slate-400 text-sm">Blue = No activity • Purple = Some activity • Red = High activity</p>
+          </div>
+          {loading ? (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+                <p className="text-slate-400">Loading map...</p>
+              </div>
+            </div>
+          ) : (
+            <GeorgiaSVGMap />
+          )}
+        </div>
+
+        {/* Two Column Layout */}
+        <div className="grid lg:grid-cols-3 gap-8 sm:gap-12">
+          {/* Left: Search and List */}
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Input
+                  type="text"
+                  placeholder="Search counties..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-slate-900/40 border-slate-700 text-white placeholder:text-slate-500 focus:border-red-600"
+                />
+              </div>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-black mb-4 flex items-center gap-2">
+              <MapPin className="w-6 h-6" />
+              {searchQuery ? 'Search Results' : 'All Counties'}
+            </h2>
+
+            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+              {filteredCounties.map((county) => {
+                const progress = Math.min((county.activity_score / 256) * 100, 100)
+                const bgColor = `rgb(${county.color_intensity}, 0, ${255 - county.color_intensity})`
+                return (
+                  <button
+                    key={county.name}
+                    onClick={() => router.push(`/dashboard/${encodeURIComponent(county.name)}`)}
+                    className="text-left bg-slate-900/40 border border-slate-700 hover:border-red-600/50 rounded-lg p-4 transition-all hover:bg-slate-900/60 group"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-black text-base sm:text-lg truncate group-hover:text-red-400 transition">
+                          {county.name}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-400">{county.activity_score} points</p>
+                      </div>
+                      <div
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 border border-slate-700"
+                        style={{ backgroundColor: bgColor }}
+                      ></div>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-600 through-purple-600 to-red-600"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Right: Leaderboard */}
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-black mb-4 flex items-center gap-2">
+              <Trophy className="w-6 h-6" />
+              Leaderboard
+            </h2>
+            <Card className="bg-slate-900/40 border-slate-700">
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {topCounties.map((county, idx) => {
+                    const bgColor = `rgb(${county.color_intensity}, 0, ${255 - county.color_intensity})`
+                    return (
+                      <button
+                        key={county.name}
+                        onClick={() => router.push(`/dashboard/${encodeURIComponent(county.name)}`)}
+                        className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 hover:bg-slate-800/50 transition border-b border-slate-800/50 last:border-b-0"
+                      >
+                        <div className="font-black text-lg sm:text-xl text-red-500 w-6 text-center">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-black text-sm sm:text-base truncate">{county.name}</p>
+                          <p className="text-xs text-slate-400">{county.activity_score} pts</p>
+                        </div>
+                        <div
+                          className="w-8 h-8 rounded-lg flex-shrink-0 border border-slate-600"
+                          style={{ backgroundColor: bgColor }}
+                        ></div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Card */}
+            <Card className="bg-slate-900/40 border-slate-700 mt-6">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Total Counties</p>
+                    <p className="text-4xl font-black text-red-500">159</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Average Activity</p>
+                    <p className="text-3xl font-black">
+                      {Math.round(counties.reduce((sum, c) => sum + c.activity_score, 0) / counties.length) || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Claimed</p>
+                    <p className="text-3xl font-black text-red-400">
+                      {counties.filter(c => c.activity_score > 0).length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-800 bg-slate-950/50 backdrop-blur mt-16 sm:mt-24 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-slate-400 text-sm mb-4">
+            Ready to claim more counties? Complete missions and earn points.
+          </p>
+          <Button onClick={() => router.push('/')} className="bg-red-600 hover:bg-red-700 text-white font-bold">
+            ← Back to Home
+          </Button>
+        </div>
+      </footer>
     </div>
   )
 }
-
-const mockCounties: County[] = [
-  { name: 'Fulton', fips: '13121', activity_score: 145 },
-  { name: 'DeKalb', fips: '13089', activity_score: 128 },
-  { name: 'Cobb', fips: '13067', activity_score: 112 },
-  { name: 'Gwinnett', fips: '13135', activity_score: 98 },
-  { name: 'Clayton', fips: '13063', activity_score: 87 },
-  { name: 'Henry', fips: '13151', activity_score: 76 },
-]
-
