@@ -39,26 +39,22 @@ async function getCountyData(county: string, supabase: any) {
         .from('counties')
         .select('*')
         .eq('name', decodeURIComponent(county))
-        .single()
-        .catch(() => ({ data: null })),
+        .single(),
       supabase
         .from('election_results')
         .select('*')
         .eq('county', decodeURIComponent(county))
         .order('year', { ascending: false })
-        .limit(1)
-        .catch(() => ({ data: [] })),
+        .limit(1),
       supabase
         .from('demographics')
         .select('*')
         .eq('county', decodeURIComponent(county))
-        .single()
-        .catch(() => ({ data: null })),
+        .single(),
       supabase
         .from('exit_polls')
         .select('*')
-        .eq('county', decodeURIComponent(county))
-        .catch(() => ({ data: [] })),
+        .eq('county', decodeURIComponent(county)),
     ])
 
     return {
