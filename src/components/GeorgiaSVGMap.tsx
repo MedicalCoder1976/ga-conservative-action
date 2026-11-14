@@ -97,20 +97,20 @@ export function GeorgiaSVGMap() {
 
   return (
     <div className="w-full">
-      <div className="bg-slate-900/30 p-6 sm:p-8 rounded-xl border border-slate-700">
+      <div className="bg-white p-6 sm:p-8 rounded-xl border-2 border-red-600">
         {/* Legend */}
         <div className="mb-6 flex flex-wrap gap-4 justify-center text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-blue-600"></div>
-            <span className="text-slate-300">No Activity {blueCount}</span>
+            <span className="text-slate-700 font-semibold">No Activity {blueCount}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-purple-600"></div>
-            <span className="text-slate-300">Some Activity {purpleCount}</span>
+            <span className="text-slate-700 font-semibold">Some Activity {purpleCount}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-red-600"></div>
-            <span className="text-slate-300">High Activity {redCount}</span>
+            <span className="text-slate-700 font-semibold">High Activity {redCount}</span>
           </div>
         </div>
 
@@ -129,7 +129,7 @@ export function GeorgiaSVGMap() {
             </defs>
 
             {/* Background */}
-            <rect width="1200" height="800" fill="#1e293b" rx="8"/>
+            <rect width="1200" height="800" fill="#ffffff" stroke="#dc2626" strokeWidth="2" rx="8"/>
 
             {/* County Blocks - Organized in a simplified map-like grid */}
             {countyList.map((countyName, idx) => {
@@ -173,7 +173,7 @@ export function GeorgiaSVGMap() {
                     x={x + (blockWidth - 2) / 2}
                     y={y + (blockHeight - 2) / 2 - 8}
                     textAnchor="middle"
-                    fill="#fff"
+                    fill="#1e293b"
                     fontSize="10"
                     fontWeight="bold"
                     pointerEvents="none"
@@ -200,27 +200,27 @@ export function GeorgiaSVGMap() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-700">
+        <div className="grid grid-cols-3 gap-4 pt-6 border-t-2 border-red-600">
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-black text-blue-400">{blueCount}</div>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">Unclaimed</p>
+            <div className="text-2xl sm:text-3xl font-black text-blue-600">{blueCount}</div>
+            <p className="text-xs sm:text-sm text-slate-700 mt-1 font-semibold">Unclaimed</p>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-black text-purple-400">{purpleCount}</div>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">Contested</p>
+            <div className="text-2xl sm:text-3xl font-black text-purple-600">{purpleCount}</div>
+            <p className="text-xs sm:text-sm text-slate-700 mt-1 font-semibold">Contested</p>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-black text-red-400">{redCount}</div>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">Controlled</p>
+            <div className="text-2xl sm:text-3xl font-black text-red-600">{redCount}</div>
+            <p className="text-xs sm:text-sm text-slate-700 mt-1 font-semibold">Controlled</p>
           </div>
         </div>
 
         {/* Hover Tooltip Info */}
         {hoveredCounty && (
-          <div className="mt-4 p-3 bg-slate-800 border border-slate-600 rounded-lg text-center">
-            <p className="font-bold text-white">{hoveredCounty}</p>
-            <p className="text-sm text-yellow-400">{Math.floor(counties.get(hoveredCounty)?.activity_score ?? 0)} points</p>
-            <p className="text-xs text-slate-400 mt-1">Click to view county details</p>
+          <div className="mt-4 p-3 bg-red-50 border-2 border-red-600 rounded-lg text-center">
+            <p className="font-bold text-slate-900">{hoveredCounty}</p>
+            <p className="text-sm text-red-600 font-semibold">{Math.floor(counties.get(hoveredCounty)?.activity_score ?? 0)} points</p>
+            <p className="text-xs text-slate-700 mt-1 font-semibold">Click to view county details</p>
           </div>
         )}
       </div>
