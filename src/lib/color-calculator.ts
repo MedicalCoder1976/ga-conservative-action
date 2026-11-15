@@ -1,25 +1,68 @@
 /**
- * Color calculator utility for county activity visualization
- * Formula: rgb(intensity, 0, 255-intensity) where intensity = min(activity_score, 255)
- * - 0 activity: rgb(0, 0, 255) = pure blue
- * - 50 activity: rgb(50, 0, 205) = mostly blue
- * - 255 activity: rgb(255, 0, 0) = pure red
- * Note: Every point of activity adds 1 to the intensity (red component), up to 255
+ * Color calculator utility for county activity visualization.
+ *
+ * The map should read as a clean progression from neutral/empty to blue
+ * to purple to red as activity increases, with a gray fallback for missing
+ * or zero data so the map remains legible.
  */
 
-/**
- * Calculate the RGB color based on activity score
- * @param activityScore - The activity score for the county
- * @returns RGB string like "rgb(255, 0, 0)"
- */
-export function getCountyColor(activityScore: number): string {
-  const intensity = Math.min(activityScore, 255)
-  const blue = 255 - intensity
-  return `rgb(${intensity}, 0, ${blue})`
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+function interpolateColor(
+  start: [number, number, number],
+  end: [number, number, number],
+  ratio: number,
+): [number, number, number] {
+  const t = clamp(ratio, 0, 1)
+  return [
+    Math.round(start[0] + (end[0] - start[0]) * t),
+    Math.round(start[1] + (end[1] - start[1]) * t),
+    Math.round(start[2] + (end[2] - start[2]) * t),
+  ]
+}
+
+function colorFromScore(score: number): [number, number, number] {
+  const safeScore = Number.isFinite(score) ? score : 0
+  if (safeScore <= 0) return [229, 231, 235]
+
+  const ratio = clamp(safeScore / 255, 0, 1)
+
+  const stops: Array<{ threshold: number; color: [number, number, number] }> = [
+    { threshold: 0, color: [229, 231, 235] },
+    { threshold: 0.25, color: [59, 130, 246] },
+    { threshold: 0.6, color: [147, 51, 234] },
+    { threshold: 1, color: [220, 38, 38] },
+  ]
+
+  for (let i = 1; i < stops.length; i += 1) {
+    const prev = stops[i - 1]
+    const next = stops[i]
+    if (ratio <= next.threshold) {
+      const span = next.threshold - prev.threshold || 1
+      const localRatio = (ratio - prev.threshold) / span
+      return interpolateColor(prev.color, next.color, localRatio)
+    }
+  }
+
+  return stops[stops.length - 1].color
 }
 
 /**
- * Get RGBA color with optional opacity
+ * Calculate the RGB color based on activity score.
+ * - 0 / no data: gray
+ * - low activity: blue
+ * - mid activity: purple
+ * - high activity: red
+ */
+export function getCountyColor(activityScore: number): string {
+  const [r, g, b] = colorFromScore(activityScore)
+  return `rgb(${r}, ${g}, ${b})`
+}
+
+/**
+ * Get RGBA color with optional opacity.
  * @param activityScore - The activity score for the county
  * @param opacity - Opacity value 0-1 (default 1)
  * @returns RGBA string like "rgba(255, 0, 0, 1)"
@@ -28,9 +71,8 @@ export function getCountyColorWithOpacity(
   activityScore: number,
   opacity: number = 1,
 ): string {
-  const intensity = Math.min(Math.floor(activityScore / 50), 255)
-  const blue = 255 - intensity
-  return `rgba(${intensity}, 0, ${blue}, ${opacity})`
+  const [r, g, b] = colorFromScore(activityScore)
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`
 }
 
 /**

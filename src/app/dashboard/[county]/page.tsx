@@ -16,6 +16,7 @@ interface CountyData {
   user: any
   leaders: any[]
   talkingPoints: any[]
+  podcasters: any[]
 }
 
 async function getCountyData(county: string, supabase: any) {
@@ -28,6 +29,7 @@ async function getCountyData(county: string, supabase: any) {
       user: null,
       leaders: [],
       talkingPoints: [],
+      podcasters: [],
     }
   }
 
@@ -72,6 +74,34 @@ async function getCountyData(county: string, supabase: any) {
         .limit(10),
     ])
 
+    // Mock podcasters data for now (can be replaced with actual DB table later)
+    const mockPodcasters = [
+      {
+        id: 1,
+        name: 'Georgia Politics Today',
+        host: 'John Mitchell',
+        platform: 'Apple Podcasts',
+        url: 'https://podcasts.apple.com',
+        description: 'Daily updates on Georgia politics and activism',
+      },
+      {
+        id: 2,
+        name: 'Peach State Voices',
+        host: 'Sarah Chen',
+        platform: 'Spotify',
+        url: 'https://open.spotify.com',
+        description: 'Conservative perspectives on state issues',
+      },
+      {
+        id: 3,
+        name: 'Get Out The Vote GA',
+        host: 'Michael Rodriguez',
+        platform: 'YouTube',
+        url: 'https://www.youtube.com',
+        description: 'Grassroots organizing and outreach tips',
+      },
+    ]
+
     return {
       county: countyRes.data || null,
       election: electionRes.data?.[0] || null,
@@ -80,6 +110,7 @@ async function getCountyData(county: string, supabase: any) {
       user: user || null,
       leaders: leadersRes.data || [],
       talkingPoints: pointsRes.data || [],
+      podcasters: mockPodcasters,
     }
   } catch (error) {
     console.error('Error fetching county data:', error)
@@ -91,6 +122,7 @@ async function getCountyData(county: string, supabase: any) {
       user: null,
       leaders: [],
       talkingPoints: [],
+      podcasters: [],
     }
   }
 }
@@ -127,6 +159,7 @@ function CountyDashboardContent() {
     user: null,
     leaders: [],
     talkingPoints: [],
+    podcasters: [],
   })
   const [loading, setLoading] = useState(true)
   const [showIntel, setShowIntel] = useState(false)
@@ -398,11 +431,145 @@ function CountyDashboardContent() {
                   </div>
                 </div>
               )}
+
+              {/* Party & County Leadership */}
+              {data.leaders.length > 0 && (
+                <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-orange-500">
+                  <h4 className="font-bold text-orange-400 mb-4">👥 Party & County Leadership</h4>
+                  <div className="space-y-4">
+                    {data.leaders.map((leader: any, idx: number) => (
+                      <div key={idx} className="bg-slate-600/30 rounded p-4 border-l-2 border-orange-400">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-bold text-white">{leader.name}</p>
+                            <p className="text-sm text-orange-300">{leader.title}</p>
+                            <p className="text-xs text-slate-400 capitalize mt-1">
+                              {leader.level}{leader.district ? ` (${leader.district})` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        {(leader.contact_email || leader.contact_phone) && (
+                          <div className="text-xs space-y-1 mt-3 pt-3 border-t border-slate-500">
+                            {leader.contact_email && (
+                              <p className="text-slate-300">
+                                <span className="text-slate-400">Email: </span>
+                                <a href={`mailto:${leader.contact_email}`} className="text-blue-400 hover:underline">
+                                  {leader.contact_email}
+                                </a>
+                              </p>
+                            )}
+                            {leader.contact_phone && (
+                              <p className="text-slate-300">
+                                <span className="text-slate-400">Phone: </span>
+                                <a href={`tel:${leader.contact_phone}`} className="text-blue-400 hover:underline">
+                                  {leader.contact_phone}
+                                </a>
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Talking Points & Social Media Shares */}
+              {data.talkingPoints.length > 0 && (
+                <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-cyan-500">
+                  <h4 className="font-bold text-cyan-400 mb-4">💬 Talking Points & Share Content</h4>
+                  <div className="space-y-4">
+                    {data.talkingPoints.map((point: any, idx: number) => (
+                      <div key={idx} className="bg-slate-600/30 rounded p-4 border-l-2 border-cyan-400">
+                        <div className="mb-3">
+                          <p className="font-bold text-white text-base">{point.title}</p>
+                          <p className="text-sm text-slate-300 mt-2">{point.content}</p>
+                          <p className="text-xs text-slate-400 mt-2">
+                            <span className="text-cyan-300">Source:</span> {point.source}
+                          </p>
+                          {point.cadence && (
+                            <p className="text-xs text-slate-400 mt-1">
+                              <span className="bg-cyan-900/50 px-2 py-1 rounded text-cyan-300">
+                                {point.cadence}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-500">
+                          <button
+                            onClick={() => {
+                              const text = `${point.title}\n\n${point.content}\n\nSource: ${point.source}`;
+                              navigator.clipboard.writeText(text);
+                              alert('Copied to clipboard!');
+                            }}
+                            className="text-xs px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition flex items-center gap-1"
+                          >
+                            📋 Copy
+                          </button>
+                          <a
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(point.title)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition flex items-center gap-1"
+                          >
+                            👍 Facebook
+                          </a>
+                          <a
+                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(point.title)} - ${encodeURIComponent(point.content)}&url=${encodeURIComponent(window.location.href)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded font-semibold transition flex items-center gap-1"
+                          >
+                            𝕏 Post
+                          </a>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(point.title + ' ' + point.content + ' ' + window.location.href)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition flex items-center gap-1"
+                          >
+                            💬 WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Georgia Podcasters & Media Resources */}
+              {data.podcasters.length > 0 && (
+                <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-pink-500">
+                  <h4 className="font-bold text-pink-400 mb-4">🎙️ Georgia Podcasters & Media</h4>
+                  <div className="space-y-4">
+                    {data.podcasters.map((podcast: any, idx: number) => (
+                      <div key={idx} className="bg-slate-600/30 rounded p-4 border-l-2 border-pink-400">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <p className="font-bold text-white">{podcast.name}</p>
+                            <p className="text-sm text-pink-300">Hosted by {podcast.host}</p>
+                            <p className="text-xs text-slate-300 mt-1">{podcast.description}</p>
+                          </div>
+                          <span className="text-xs bg-pink-900/50 px-2 py-1 rounded text-pink-300 whitespace-nowrap ml-2">
+                            {podcast.platform}
+                          </span>
+                        </div>
+                        <a
+                          href={podcast.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs px-3 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded font-semibold transition inline-block mt-3"
+                        >
+                          Listen Now →
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* Activity Logger - Show login prompt AFTER user tries to log */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
           <h3 className="text-2xl font-black text-green-400 mb-6">✍️ LOG ACTIVITY</h3>
           {data.user ? (

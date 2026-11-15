@@ -92,10 +92,14 @@ export function GeorgiaSVGMap() {
   }
 
   const countyList = Array.from(counties.keys()).sort()
-  const blueCount = countyList.filter((c) => (counties.get(c)?.activity_score ?? 0) < 50).length
+  const grayCount = countyList.filter((c) => (counties.get(c)?.activity_score ?? 0) <= 0).length
+  const blueCount = countyList.filter((c) => {
+    const s = counties.get(c)?.activity_score ?? 0
+    return s > 0 && s < 80
+  }).length
   const purpleCount = countyList.filter((c) => {
     const s = counties.get(c)?.activity_score ?? 0
-    return s >= 50 && s < 200
+    return s >= 80 && s < 200
   }).length
   const redCount = countyList.filter((c) => (counties.get(c)?.activity_score ?? 0) >= 200).length
 
@@ -105,8 +109,12 @@ export function GeorgiaSVGMap() {
         {/* Legend */}
         <div className="mb-6 flex flex-wrap gap-4 justify-center text-sm">
           <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-gray-300"></div>
+            <span className="text-slate-700 font-semibold">No Activity {grayCount}</span>
+          </div>
+          <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-blue-600"></div>
-            <span className="text-slate-700 font-semibold">No Activity {blueCount}</span>
+            <span className="text-slate-700 font-semibold">Low Activity {blueCount}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-purple-600"></div>
@@ -204,10 +212,14 @@ export function GeorgiaSVGMap() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-6 border-t-2 border-red-600">
+        <div className="grid grid-cols-4 gap-4 pt-6 border-t-2 border-red-600">
+          <div className="text-center">
+            <div className="text-2xl sm:text-3xl font-black text-gray-500">{grayCount}</div>
+            <p className="text-xs sm:text-sm text-slate-700 mt-1 font-semibold">No Activity</p>
+          </div>
           <div className="text-center">
             <div className="text-2xl sm:text-3xl font-black text-blue-600">{blueCount}</div>
-            <p className="text-xs sm:text-sm text-slate-700 mt-1 font-semibold">Unclaimed</p>
+            <p className="text-xs sm:text-sm text-slate-700 mt-1 font-semibold">Low</p>
           </div>
           <div className="text-center">
             <div className="text-2xl sm:text-3xl font-black text-purple-600">{purpleCount}</div>
