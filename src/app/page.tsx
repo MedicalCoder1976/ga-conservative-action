@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function HomePage() {
-  const [electionData, setElectionData] = useState({})
+  const [electionData, setElectionData] = useState<Record<string, any>>({})
   const router = useRouter()
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function HomePage() {
 
         if (error) throw error
 
-        const dataMap = {}
+        const dataMap: Record<string, any> = {}
         data?.forEach(row => {
           dataMap[row.county] = {
             name: row.county,

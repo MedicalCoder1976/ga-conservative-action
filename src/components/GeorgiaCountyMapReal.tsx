@@ -170,7 +170,8 @@ export default function GeorgiaCountyMapReal({
     } else {
       // Blue for Democrat
       const intensity = Math.min(1, (demPct - repPct) / 50);
-      return `rgb(${30}, ${${80 + intensity * 150}}, ${220})`; // Blue scale
+      const blueIntensity = 80 + intensity * 150;
+      return `rgb(30, ${blueIntensity}, 220)`; // Blue scale
     }
   };
 
