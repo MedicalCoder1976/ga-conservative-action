@@ -2,17 +2,55 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import GeorgiaCountyMap from '@/components/GeorgiaCountyMapNew'
+import GeorgiaCountyMapReal from '@/components/GeorgiaCountyMapReal'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function HomePage() {
+  const [electionData, setElectionData] = useState({})
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchElectionData = async () => {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('election_results')
+          .select('county, republican_votes, democrat_votes, republican_pct, democrat_pct')
+          .eq('race', 'Governor 2026')
+          .eq('year', 2026)
+
+        if (error) throw error
+
+        const dataMap = {}
+        data?.forEach(row => {
+          dataMap[row.county] = {
+            name: row.county,
+            republican_votes: row.republican_votes || 0,
+            democrat_votes: row.democrat_votes || 0,
+            republican_pct: row.republican_pct || 0,
+            democrat_pct: row.democrat_pct || 0,
+          }
+        })
+        setElectionData(dataMap)
+      } catch (error) {
+        console.error('Error fetching election data:', error)
+      }
+    }
+
+    fetchElectionData()
+  }, [])
+
   const handleViewMap = () => {
     const mapElement = document.getElementById('map')
     if (mapElement) {
       mapElement.scrollIntoView({ behavior: 'smooth' })
     }
+  }
+
+  const handleCountyClick = (county: string) => {
+    router.push(`/dashboard/${encodeURIComponent(county)}`)
   }
 
   return (
@@ -101,13 +139,10 @@ export default function HomePage() {
 
             {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
             <div className="order-1 lg:order-2" id="map">
-              <GeorgiaCountyMap 
+              <GeorgiaCountyMapReal 
                 isLoggedIn={false}
-                countyScores={{}}
-                onCountyClick={(county) => {
-                  // Navigate to county dashboard
-                  window.location.href = `/dashboard/${encodeURIComponent(county)}`
-                }}
+                electionData={electionData}
+                onCountyClick={handleCountyClick}
               />
             </div>
           </div>
