@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import { GeorgiaCountyMapSVG } from '@/components/GeorgiaCountyMapSVG'
+import GeorgiaCountyMap from '@/components/GeorgiaCountyMapNew'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function HomePage() {
   const handleViewMap = () => {
@@ -99,7 +101,14 @@ export default function HomePage() {
 
             {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
             <div className="order-1 lg:order-2" id="map">
-              <GeorgiaCountyMapSVG />
+              <GeorgiaCountyMap 
+                isLoggedIn={false}
+                countyScores={{}}
+                onCountyClick={(county) => {
+                  // Navigate to county dashboard
+                  window.location.href = `/dashboard/${encodeURIComponent(county)}`
+                }}
+              />
             </div>
           </div>
         </div>
