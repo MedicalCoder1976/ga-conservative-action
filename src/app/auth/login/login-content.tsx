@@ -44,9 +44,17 @@ export default function LoginPageContent() {
     setSuccess(false)
 
     try {
+      // Support both email and username login
+      let email = username
+      
+      // If username doesn't contain @, treat it as a username and convert to email
+      if (!email.includes('@')) {
+        email = username + '@gaissues.local'
+      }
+      
       // Sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: username + '@gaissues.local', // Convert username to email format
+        email,
         password,
       })
       
@@ -55,7 +63,7 @@ export default function LoginPageContent() {
       // Redirect to homepage or dashboard
       router.push('/')
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in. Check your username and password.')
+      setError(err.message || 'Failed to sign in. Check your email/username and password.')
     } finally {
       setLoading(false)
     }
@@ -179,19 +187,19 @@ export default function LoginPageContent() {
               <form onSubmit={handlePasswordSignIn} className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-bold mb-2 text-slate-900">
-                    Username
+                    Username or Email
                   </label>
                   <Input
                     id="username"
                     type="text"
-                    placeholder="testuser"
+                    placeholder="demouser or demo@gaissues.local"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                     disabled={loading}
                     className="bg-white border-2 border-red-600 text-slate-900 placeholder:text-slate-400 text-lg py-3"
                   />
-                  <p className="text-xs text-slate-600 mt-1 font-semibold">Try: testuser</p>
+                  <p className="text-xs text-slate-600 mt-1 font-semibold">Try: demouser or fulton_volunteer</p>
                 </div>
                 <div>
                   <label htmlFor="password" className="block text-sm font-bold mb-2 text-slate-900">
@@ -207,7 +215,7 @@ export default function LoginPageContent() {
                     disabled={loading}
                     className="bg-white border-2 border-red-600 text-slate-900 placeholder:text-slate-400 text-lg py-3"
                   />
-                  <p className="text-xs text-slate-600 mt-1 font-semibold">Try: testpass123</p>
+                  <p className="text-xs text-slate-600 mt-1 font-semibold">Try: demo12345 or fulton123</p>
                 </div>
                 <button
                   type="submit"
