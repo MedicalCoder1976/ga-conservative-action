@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import GeorgiaCountyMapProper from '@/components/GeorgiaCountyMapProper'
+import GeorgiaElectionMap from '@/components/GeorgiaElectionMap'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -10,44 +10,6 @@ import { createClient } from '@/lib/supabase/client'
 export default function HomePage() {
   const [electionData, setElectionData] = useState<Record<string, any>>({})
   const router = useRouter()
-
-  useEffect(() => {
-    const fetchElectionData = async () => {
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('election_results')
-          .select('county, republican_votes, democrat_votes, republican_pct, democrat_pct')
-          .eq('race', 'Governor 2026')
-          .eq('year', 2026)
-
-        if (error) throw error
-
-        const dataMap: Record<string, any> = {}
-        data?.forEach(row => {
-          dataMap[row.county] = {
-            name: row.county,
-            republican_votes: row.republican_votes || 0,
-            democrat_votes: row.democrat_votes || 0,
-            republican_pct: row.republican_pct || 0,
-            democrat_pct: row.democrat_pct || 0,
-          }
-        })
-        setElectionData(dataMap)
-      } catch (error) {
-        console.error('Error fetching election data:', error)
-      }
-    }
-
-    fetchElectionData()
-  }, [])
-
-  const handleViewMap = () => {
-    const mapElement = document.getElementById('map')
-    if (mapElement) {
-      mapElement.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   const handleCountyClick = (county: string) => {
     router.push(`/dashboard/${encodeURIComponent(county)}`)
@@ -114,12 +76,12 @@ export default function HomePage() {
                 >
                   Explore Now <ArrowRight className="w-5 h-5" />
                 </Link>
-                <button
-                  className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold px-8 py-4 text-lg rounded-lg transition"
-                  onClick={handleViewMap}
+                <a
+                  href="#map"
+                  className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold px-8 py-4 text-lg rounded-lg transition text-center"
                 >
                   View Map
-                </button>
+                </a>
               </div>
 
               {/* Stats */}
@@ -139,9 +101,7 @@ export default function HomePage() {
 
             {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
             <div className="order-1 lg:order-2" id="map">
-              <GeorgiaCountyMapProper 
-                isLoggedIn={false}
-                electionData={electionData}
+              <GeorgiaElectionMap 
                 onCountyClick={handleCountyClick}
               />
             </div>
