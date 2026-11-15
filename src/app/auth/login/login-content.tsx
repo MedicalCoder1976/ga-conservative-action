@@ -52,17 +52,27 @@ export default function LoginPageContent() {
         email = username + '@gaissues.local'
       }
       
+      console.log('🔐 Attempting login with email:', email)
+      
       // Sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       
-      if (error) throw error
+      console.log('📊 Login response:', { success: !error, error: error?.message })
+      
+      if (error) {
+        console.error('❌ Auth error:', error)
+        throw error
+      }
+      
+      console.log('✅ Login successful, redirecting...')
       
       // Redirect to homepage or dashboard
       router.push('/')
     } catch (err: any) {
+      console.error('❌ Exception:', err)
       setError(err.message || 'Failed to sign in. Check your email/username and password.')
     } finally {
       setLoading(false)
