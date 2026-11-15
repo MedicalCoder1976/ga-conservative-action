@@ -17,6 +17,7 @@ interface CountyData {
   leaders: any[]
   talkingPoints: any[]
   podcasters: any[]
+  drift: any
 }
 
 async function getCountyData(county: string, supabase: any) {
@@ -30,6 +31,7 @@ async function getCountyData(county: string, supabase: any) {
       leaders: [],
       talkingPoints: [],
       podcasters: [],
+      drift: null,
     }
   }
 
@@ -38,18 +40,18 @@ async function getCountyData(county: string, supabase: any) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes] = await Promise.all([
+    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes] = await Promise.all([
       supabase
         .from('counties')
         .select('*')
         .eq('name', decodeURIComponent(county))
         .single(),
       supabase
-        .from('election_results')
+        .from('county_voter_statistics')
         .select('*')
         .eq('county', decodeURIComponent(county))
-        .order('year', { ascending: false })
-        .limit(1),
+        .eq('election_year', 2026)
+        .single(),
       supabase
         .from('demographics')
         .select('*')
@@ -72,7 +74,25 @@ async function getCountyData(county: string, supabase: any) {
         .eq('active', true)
         .order('date', { ascending: false })
         .limit(10),
+      supabase
+        .from('county_voter_statistics')
+        .select('*')
+        .eq('county', decodeURIComponent(county))
+        .order('election_year', { ascending: false })
+        .limit(2),
     ])
+
+    // Transform election data to include percentages
+    let formattedElection = null
+    if (electionRes.data) {
+      const { democrat_votes, republican_votes, total_votes, election_year } = electionRes.data
+      formattedElection = {
+        ...electionRes.data,
+        democrat_pct: (democrat_votes / total_votes * 100),
+        republican_pct: (republican_votes / total_votes * 100),
+        year: election_year,
+      }
+    }
 
     // Mock podcasters data for now (can be replaced with actual DB table later)
     const mockPodcasters = [
@@ -104,13 +124,14 @@ async function getCountyData(county: string, supabase: any) {
 
     return {
       county: countyRes.data || null,
-      election: electionRes.data?.[0] || null,
+      election: formattedElection,
       demographics: demographicsRes.data || null,
       polls: pollsRes.data || [],
       user: user || null,
       leaders: leadersRes.data || [],
       talkingPoints: pointsRes.data || [],
       podcasters: mockPodcasters,
+      drift: driftRes.data,
     }
   } catch (error) {
     console.error('Error fetching county data:', error)
@@ -123,6 +144,7 @@ async function getCountyData(county: string, supabase: any) {
       leaders: [],
       talkingPoints: [],
       podcasters: [],
+      drift: null,
     }
   }
 }
@@ -160,6 +182,7 @@ function CountyDashboardContent() {
     leaders: [],
     talkingPoints: [],
     podcasters: [],
+    drift: null,
   })
   const [loading, setLoading] = useState(true)
   const [showIntel, setShowIntel] = useState(false)
@@ -217,31 +240,86 @@ function CountyDashboardContent() {
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Flip Progress */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-red-600/50 rounded-xl p-8 mb-8">
-          <h2 className="text-2xl font-black text-red-400 mb-4">🎮 FLIP PROGRESS</h2>
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-lg">County Control</span>
-              <span className="text-2xl font-black text-yellow-400">{Math.round(flipPercent)}%</span>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-8 overflow-hidden border-2 border-slate-600">
-              <div
-                className="h-full transition-all duration-500 flex items-center justify-center font-black text-sm"
-                style={{
-                  width: `${flipPercent}%`,
-                  background: `linear-gradient(90deg, rgb(0, 0, 255), rgb(${colorIntensity}, 0, ${255 - colorIntensity})), linear-gradient(90deg, #ec4899, #f59e0b)`,
-                }}
-              >
-                {flipPercent > 10 && <span className="text-white drop-shadow">FLIPPING</span>}
+        {/* Voter Drift Progress */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
+          <h2 className="text-2xl font-black text-slate-300 mb-4">📊 PROGRESS</h2>
+          
+          {data.drift ? (
+            <div className="space-y-4">
+              {/* Drift Direction & Tilt */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-bold text-lg">Voter Drift: {data.drift.baseline_year} → 2024</span>
+                  <span className={`text-2xl font-black ${
+                    data.drift.direction === 'blue' ? 'text-blue-400' :
+                    data.drift.direction === 'red' ? 'text-red-400' :
+                    'text-slate-400'
+                  }`}>
+                    {data.drift.direction === 'blue' ? '← BLUE SHIFT' :
+                     data.drift.direction === 'red' ? 'RED SHIFT →' :
+                     '◆ NEUTRAL'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar - Red/Blue Only */}
+              <div className="mb-6">
+                <div className="flex justify-between mb-2 text-sm font-semibold">
+                  <span className="text-blue-400">Democratic: {data.drift.dem_current_percent?.toFixed(1)}%</span>
+                  <span className="text-red-400">Republican: {data.drift.rep_current_percent?.toFixed(1)}%</span>
+                </div>
+                <div className="w-full bg-slate-700 rounded-lg h-10 overflow-hidden border-2 border-slate-600 flex">
+                  {/* Blue bar */}
+                  <div
+                    className="bg-blue-600 transition-all duration-500 flex items-center justify-center text-white font-bold text-xs"
+                    style={{ width: `${data.drift.dem_current_percent || 50}%` }}
+                  >
+                    {data.drift.dem_current_percent > 20 && `${data.drift.dem_current_percent?.toFixed(0)}%`}
+                  </div>
+                  {/* Red bar */}
+                  <div
+                    className="bg-red-600 transition-all duration-500 flex items-center justify-center text-white font-bold text-xs"
+                    style={{ width: `${data.drift.rep_current_percent || 50}%` }}
+                  >
+                    {data.drift.rep_current_percent > 20 && `${data.drift.rep_current_percent?.toFixed(0)}%`}
+                  </div>
+                </div>
+              </div>
+
+              {/* Drift Details */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="bg-blue-900/30 rounded-lg p-3 border-l-4 border-blue-500">
+                  <p className="text-blue-400 font-semibold text-xs mb-1">Democratic Shift</p>
+                  <p className="text-lg font-bold text-blue-300">
+                    {data.drift.dem_drift_pct > 0 ? '+' : ''}{data.drift.dem_drift_pct?.toFixed(1)}%
+                  </p>
+                </div>
+                <div className="bg-red-900/30 rounded-lg p-3 border-l-4 border-red-500">
+                  <p className="text-red-400 font-semibold text-xs mb-1">Republican Shift</p>
+                  <p className="text-lg font-bold text-red-300">
+                    {data.drift.rep_drift_pct > 0 ? '+' : ''}{data.drift.rep_drift_pct?.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+
+              {/* Interpretation */}
+              <div className="bg-slate-900/50 rounded-lg p-4 text-sm text-slate-300 border border-slate-600">
+                <p className="font-semibold mb-2">What This Means:</p>
+                <p>
+                  {data.drift.dem_drift_pct > 0 
+                    ? `This county has shifted BLUE by ${Math.abs(data.drift.dem_drift_pct).toFixed(1)}% since 2016.`
+                    : data.drift.rep_drift_pct > 0
+                    ? `This county has shifted RED by ${Math.abs(data.drift.rep_drift_pct).toFixed(1)}% since 2016.`
+                    : 'This county has remained relatively stable since 2016.'}
+                  {' '} Current results show {data.drift.direction === 'blue' ? 'Democratic' : data.drift.direction === 'red' ? 'Republican' : 'mixed'} strength.
+                </p>
               </div>
             </div>
-            <p className="text-sm text-slate-400 mt-2">
-              {flipPercent < 50
-                ? `Need ${Math.ceil((128 - score) / 10)} more missions to control this county`
-                : `You're winning! Keep the momentum!`}
-            </p>
-          </div>
+          ) : (
+            <div className="bg-slate-700/50 rounded-lg p-6 text-center text-slate-400">
+              <p>No drift data available yet. Check back after running the voter analysis setup.</p>
+            </div>
+          )}
         </div>
 
         {/* Today's Mission */}
