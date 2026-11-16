@@ -27,37 +27,84 @@ export function VoterDriftMap() {
     try {
       const supabase = createClient()
       
-      // Fetch voter drift data
-      const { data, error: err } = await supabase
-        .from('county_voter_drift')
+      // Fetch county voter statistics for 2016 (baseline) and current year
+      const { data: baselineData, error: baselineErr } = await supabase
+        .from('county_voter_statistics')
         .select('*')
-        .eq('current_year', selectedYear)
-        .order('county', { ascending: true })
+        .eq('election_year', 2016)
 
-      if (err) {
-        console.error('Error fetching drift data:', err)
+      const { data: currentData, error: currentErr } = await supabase
+        .from('county_voter_statistics')
+        .select('*')
+        .eq('election_year', selectedYear)
+
+      if (baselineErr || currentErr) {
+        console.error('Error fetching drift data:', baselineErr || currentErr)
         initializeMockDrift()
         return
       }
 
-      if (!data || data.length === 0) {
-        console.warn('No drift data found, using mock data')
+      if (!baselineData || !currentData || baselineData.length === 0 || currentData.length === 0) {
+        console.warn('Insufficient data for drift calculation, using mock data')
         initializeMockDrift()
         return
       }
 
-      const countyMap = new Map<string, CountyDrift>()
-      data.forEach((row: any) => {
-        const driftData: CountyDrift = {
-          name: row.county,
-          drift_pct: row.rep_drift_pct || 0, // Positive = R gain, Negative = D gain
-          dem_drift: row.dem_drift_pct || 0,
-          rep_drift: row.rep_drift_pct || 0,
-          baseline_year: row.baseline_year || 2016,
-          current_year: row.current_year || 2026,
-        }
-        countyMap.set(row.county, driftData)
+      // Create lookup maps
+      const baselineMap = new Map()
+      const currentMap = new Map()
+      
+      baselineData.forEach((row: any) => {
+        baselineMap.set(row.county, {
+          dem_votes: row.democrat_votes || 0,
+          rep_votes: row.republican_votes || 0,
+          total_votes: row.total_votes || 1,
+        })
       })
+
+      currentData.forEach((row: any) => {
+        currentMap.set(row.county, {
+          dem_votes: row.democrat_votes || 0,
+          rep_votes: row.republican_votes || 0,
+          total_votes: row.total_votes || 1,
+        })
+      })
+
+      // Calculate drift for all counties
+      const countyMap = new Map<string, CountyDrift>()
+      GEORGIA_COUNTIES.forEach((countyName) => {
+        const baseline = baselineMap.get(countyName)
+        const current = currentMap.get(countyName)
+
+        if (baseline && current) {
+          const baselineRepPct = (baseline.rep_votes / baseline.total_votes) * 100
+          const currentRepPct = (current.rep_votes / current.total_votes) * 100
+          const drift = currentRepPct - baselineRepPct // Positive = R gain, Negative = D gain
+
+          const driftData: CountyDrift = {
+            name: countyName,
+            drift_pct: drift,
+            dem_drift: drift < 0 ? Math.abs(drift) : 0,
+            rep_drift: drift > 0 ? drift : 0,
+            baseline_year: 2016,
+            current_year: selectedYear,
+          }
+          countyMap.set(countyName, driftData)
+        } else {
+          // Use mock data if we don't have both baseline and current
+          const mockDrift = (Math.random() - 0.5) * 20
+          const driftData: CountyDrift = {
+            name: countyName,
+            drift_pct: mockDrift,
+            dem_drift: mockDrift < 0 ? Math.abs(mockDrift) : 0,
+            rep_drift: mockDrift > 0 ? mockDrift : 0,
+            baseline_year: 2016,
+            current_year: selectedYear,
+          }
+          countyMap.set(countyName, driftData)
+        }
+      })
+      
       setCounties(countyMap)
     } catch (err) {
       console.error('Error fetching drift:', err)
