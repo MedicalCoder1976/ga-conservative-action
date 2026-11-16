@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import GeorgiaCountyMapLeaflet from '@/components/GeorgiaCountyMapLeaflet'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+
+const GeorgiaCountyMapLeaflet = dynamic(
+  () => import('@/components/GeorgiaCountyMapLeaflet'),
+  { ssr: false, loading: () => <div className="w-full h-96 bg-slate-100 rounded-lg animate-pulse border-2 border-red-600" /> }
+)
 
 export default function HomePage() {
   const [electionData, setElectionData] = useState<Record<string, any>>({})
