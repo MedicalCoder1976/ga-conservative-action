@@ -325,7 +325,7 @@ function CountyDashboardContent() {
         {/* Today's Mission */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-yellow-600/50 rounded-xl p-8">
-            <h3 className="text-2xl font-black text-yellow-400 mb-6">📋 TODAY'S MISSION</h3>
+            <h3 className="text-2xl font-black text-yellow-400 mb-6">📋 WHAT CAN YOU DO TODAY ?</h3>
             <div className="space-y-4">
               <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer border-l-4 border-blue-500">
                 <div className="flex justify-between items-start">
