@@ -238,8 +238,8 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
     <div className="w-full border-2 border-red-600 rounded-lg overflow-hidden shadow-lg">
       <div
         ref={mapContainer}
-        className="w-full h-screen md:h-screen bg-slate-50 relative"
-        style={{ position: 'relative', minHeight: '600px', maxHeight: '90vh' }}
+        className="w-full bg-slate-50 relative"
+        style={{ position: 'relative', minHeight: '700px', height: '700px' }}
       />
 
       <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-t-2 border-red-600 px-4 py-3">
