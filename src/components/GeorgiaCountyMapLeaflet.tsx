@@ -43,7 +43,7 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
   useEffect(() => {
     const fetchGeoData = async () => {
       try {
-        const response = await fetch('/georgia-counties-simplified.geojson');
+        const response = await fetch('/data/georgia-counties-detailed.json');
         if (!response.ok) throw new Error('Failed to fetch map data');
         const data = await response.json();
         setGeoData(data);
@@ -81,6 +81,33 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
   const getDriftLabel = (drift: number): string => {
     if (drift >= -0.5 && drift <= 0.5) return 'Baseline';
     return `${drift > 0 ? '+' : ''}${drift.toFixed(1)}%`;
+  };
+
+  // Calculate centroid of a polygon
+  const getCentroid = (coordinates: any[]): [number, number] | null => {
+    if (!coordinates || coordinates.length === 0) return null;
+
+    // Handle different coordinate formats
+    let coords = coordinates;
+    if (coordinates[0] && Array.isArray(coordinates[0]) && Array.isArray(coordinates[0][0])) {
+      coords = coordinates[0]; // For Polygon type
+    }
+
+    if (coords.length === 0) return null;
+
+    let minX = coords[0][0];
+    let minY = coords[0][1];
+    let maxX = coords[0][0];
+    let maxY = coords[0][1];
+
+    for (let coord of coords) {
+      minX = Math.min(minX, coord[0]);
+      minY = Math.min(minY, coord[1]);
+      maxX = Math.max(maxX, coord[0]);
+      maxY = Math.max(maxY, coord[1]);
+    }
+
+    return [(minX + maxX) / 2, (minY + maxY) / 2];
   };
 
   // Initialize map and add layers
@@ -136,6 +163,46 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
           setHoveredCounty(null);
           layer.setStyle({ weight: 1, fillOpacity: 0.7 });
         });
+
+        // Add county name label at centroid
+        if ((feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') && feature.geometry.coordinates) {
+          let coordinates = feature.geometry.coordinates;
+          
+          // For MultiPolygon, use the first polygon's coordinates
+          if (feature.geometry.type === 'MultiPolygon' && coordinates.length > 0) {
+            coordinates = coordinates[0];
+          }
+          
+          const centroid = getCentroid(coordinates);
+          if (centroid) {
+            const labelMarker = L.marker(
+              [centroid[1], centroid[0]],
+              {
+                icon: L.divIcon({
+                  html: `<div style="
+                    background: rgba(255, 255, 255, 0.95);
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    color: #334155;
+                    text-align: center;
+                    border: 1px solid #94a3b8;
+                    white-space: nowrap;
+                    pointer-events: none;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                  ">${countyName}</div>`,
+                  className: 'county-label-marker',
+                  iconSize: [120, 20],
+                  iconAnchor: [60, 10],
+                }),
+              }
+            );
+            if (map.current) {
+              labelMarker.addTo(map.current);
+            }
+          }
+        }
       },
     }).addTo(map.current);
 
