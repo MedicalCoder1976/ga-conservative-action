@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import ActivityLogger from '@/components/ActivityLogger'
+import GuestActivityLogger from '@/components/GuestActivityLogger'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
@@ -649,24 +650,12 @@ function CountyDashboardContent() {
               }}
             />
           ) : (
-            <div className="bg-white border-2 border-red-600 rounded-lg p-8 text-center">
-              <div className="mb-6">
-                <div className="text-5xl mb-4">📝</div>
-                <h4 className="text-2xl font-black text-slate-900 mb-3">Ready to Log Activities?</h4>
-                <p className="text-slate-700 font-semibold text-lg mb-4">
-                  Sign in to save your progress, earn points, and track your impact over time.
-                </p>
-              </div>
-              <a 
-                href="/auth/login" 
-                className="inline-block px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-lg transition"
-              >
-                Sign In to Start Logging
-              </a>
-              <p className="text-slate-600 text-sm mt-6 font-semibold">
-                You can view all county data without signing in. Only your activity logs require a login.
-              </p>
-            </div>
+            <GuestActivityLogger
+              county={decodedCounty}
+              onActivityLogged={() => {
+                // Optionally refresh data here
+              }}
+            />
           )}
         </div>
 
