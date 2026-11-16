@@ -89,10 +89,9 @@ export default function GeorgiaElectionMap({
       try {
         const supabase = createClient();
         const { data, error } = await supabase
-          .from('election_results')
-          .select('county, republican_votes, democrat_votes, republican_pct, democrat_pct, year')
-          .eq('year', selectedYear)
-          .eq('race', 'Governor');
+          .from('county_voter_statistics')
+          .select('county, democrat_votes, republican_votes, total_votes, election_year')
+          .eq('election_year', selectedYear);
 
         if (error) {
           console.error('Error fetching election data:', error);
@@ -100,12 +99,16 @@ export default function GeorgiaElectionMap({
         } else {
           const dataMap: Record<string, ElectionData> = {};
           data?.forEach((row: any) => {
+            const totalVotes = row.total_votes || 1;
+            const republicanPct = (row.republican_votes / totalVotes) * 100;
+            const democratPct = (row.democrat_votes / totalVotes) * 100;
+            
             dataMap[row.county] = {
               county: row.county,
               republican_votes: row.republican_votes || 0,
               democrat_votes: row.democrat_votes || 0,
-              republican_pct: row.republican_pct || 0,
-              democrat_pct: row.democrat_pct || 0,
+              republican_pct: republicanPct,
+              democrat_pct: democratPct,
             };
           });
           setElectionData(dataMap);
