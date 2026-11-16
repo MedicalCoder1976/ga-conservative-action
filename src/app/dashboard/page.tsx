@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { GeorgiaSVGMap } from '@/components/GeorgiaSVGMap'
+import { VoterDriftMap } from '@/components/VoterDriftMap'
 import { MapPin, Search, Zap, Trophy } from 'lucide-react'
 
 interface County {
@@ -71,10 +71,10 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Large Map */}
-        <div className="mb-12 sm:mb-16 bg-gradient-to-b from-slate-900/50 to-slate-950/50 rounded-2xl border border-slate-800 p-6 sm:p-8 shadow-2xl">
+        <div className="mb-12 sm:mb-16 bg-gradient-to-b from-green-50 to-white rounded-2xl border-2 border-green-600 p-6 sm:p-8 shadow-2xl">
           <div className="mb-4">
-            <h2 className="text-2xl sm:text-3xl font-black text-white">All 159 Counties</h2>
-            <p className="text-slate-400 text-sm">Blue = No activity • Purple = Some activity • Red = High activity</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Georgia Voter Drift Map (2016-2026)</h2>
+            <p className="text-slate-600 text-sm">Green baseline • Red = Republican gains • Blue = Democratic gains | Click a county for details</p>
           </div>
           {loading ? (
             <div className="flex items-center justify-center h-96">
@@ -84,7 +84,7 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <GeorgiaSVGMap />
+            <VoterDriftMap />
           )}
         </div>
 
