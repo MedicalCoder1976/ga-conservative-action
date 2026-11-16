@@ -1,27 +1,9 @@
 // @ts-nocheck
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-
-// Import Leaflet CSS
+import React, { useEffect, useState, useRef } from 'react';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
-// Dynamic imports with proper typing
-const DynamicMapContainer = dynamic(async () => {
-  const { MapContainer } = await import('react-leaflet');
-  return MapContainer;
-}, { ssr: false });
-
-const DynamicTileLayer = dynamic(async () => {
-  const { TileLayer } = await import('react-leaflet');
-  return TileLayer;
-}, { ssr: false });
-
-const DynamicGeoJSON = dynamic(async () => {
-  const { GeoJSON } = await import('react-leaflet');
-  return GeoJSON;
-}, { ssr: false });
 
 interface DriftData {
   [key: string]: { drift_pct: number };
@@ -32,14 +14,16 @@ interface GeorgiaCountyMapLeafletProps {
 }
 
 export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCountyMapLeafletProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<L.Map | null>(null);
+  const geoJsonLayer = useRef<L.GeoJSON | null>(null);
   const [driftData, setDriftData] = useState<DriftData>({});
   const [geoData, setGeoData] = useState<any>(null);
   const [hoveredCounty, setHoveredCounty] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const geoJsonLayerRef = React.useRef<any>(null);
 
-  // Fetch drift data from API
+  // Fetch drift data
   useEffect(() => {
     const fetchDriftData = async () => {
       try {
@@ -74,73 +58,91 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
     fetchGeoData();
   }, []);
 
-  // Get color based on drift percentage
-  const getColor = useCallback((countyName: string): string => {
+  // Get color based on drift
+  const getColor = (countyName: string): string => {
     const data = driftData[countyName];
-    if (!data) return '#dcfce7'; // Light green - no data
+    if (!data) return '#dcfce7';
 
     const drift = data.drift_pct;
 
-    // Green = Baseline (±0.5%)
     if (drift >= -0.5 && drift <= 0.5) return '#22c55e';
-
-    // Red shades = Republican gains
     if (drift > 0.5 && drift <= 3) return '#fca5a5';
     if (drift > 3 && drift <= 6) return '#ef4444';
     if (drift > 6 && drift <= 10) return '#dc2626';
     if (drift > 10) return '#7f1d1d';
-
-    // Blue shades = Democratic gains
     if (drift < -0.5 && drift >= -3) return '#93c5fd';
     if (drift < -3 && drift >= -6) return '#3b82f6';
     if (drift < -6 && drift >= -10) return '#1d4ed8';
     if (drift < -10) return '#1e40af';
 
     return '#dcfce7';
-  }, [driftData]);
+  };
 
   const getDriftLabel = (drift: number): string => {
     if (drift >= -0.5 && drift <= 0.5) return 'Baseline';
     return `${drift > 0 ? '+' : ''}${drift.toFixed(1)}%`;
   };
 
-  // Handle GeoJSON features
-  const onEachFeature = useCallback((feature: any, layer: any) => {
-    const countyName = feature.properties?.name;
-    if (!countyName) return;
+  // Initialize map and add layers
+  useEffect(() => {
+    if (!mapContainer.current || !geoData) return;
 
-    const drift = driftData[countyName];
-    const isHovered = hoveredCounty === countyName;
+    // Initialize map only once
+    if (!map.current) {
+      map.current = L.map(mapContainer.current).setView([32.9866, -83.6487], 7);
 
-    // Set feature style
-    const fillColor = getColor(countyName);
-    layer.setStyle({
-      fillColor,
-      fillOpacity: isHovered ? 0.9 : 0.7,
-      color: '#333',
-      weight: isHovered ? 3 : 1,
-      opacity: 1,
-    });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(map.current);
+    }
 
-    // Create popup
-    const driftLabel = drift ? getDriftLabel(drift.drift_pct) : 'No data';
-    layer.bindPopup(`<div class="font-semibold">${countyName}</div><div>${driftLabel}</div>`);
+    // Remove old GeoJSON layer if it exists
+    if (geoJsonLayer.current) {
+      map.current.removeLayer(geoJsonLayer.current);
+    }
 
-    // Add event listeners
-    layer.on('click', () => {
-      onCountyClick?.(countyName);
-    });
+    // Add GeoJSON layer
+    geoJsonLayer.current = L.geoJSON(geoData, {
+      style: (feature) => {
+        const countyName = feature?.properties?.name;
+        return {
+          fillColor: getColor(countyName),
+          fillOpacity: hoveredCounty === countyName ? 0.9 : 0.7,
+          color: '#333',
+          weight: hoveredCounty === countyName ? 3 : 1,
+          opacity: 1,
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        const countyName = feature.properties?.name;
+        if (!countyName) return;
 
-    layer.on('mouseover', () => {
-      setHoveredCounty(countyName);
-      layer.setStyle({ weight: 3, fillOpacity: 0.9 });
-    });
+        const drift = driftData[countyName];
+        const driftLabel = drift ? getDriftLabel(drift.drift_pct) : 'No data';
 
-    layer.on('mouseout', () => {
-      setHoveredCounty(null);
-      layer.setStyle({ weight: 1, fillOpacity: 0.7 });
-    });
-  }, [driftData, hoveredCounty, getColor, onCountyClick]);
+        layer.bindPopup(`<div class="font-semibold">${countyName}</div><div>${driftLabel}</div>`);
+
+        layer.on('click', () => {
+          onCountyClick?.(countyName);
+        });
+
+        layer.on('mouseover', () => {
+          setHoveredCounty(countyName);
+          layer.setStyle({ weight: 3, fillOpacity: 0.9 });
+        });
+
+        layer.on('mouseout', () => {
+          setHoveredCounty(null);
+          layer.setStyle({ weight: 1, fillOpacity: 0.7 });
+        });
+      },
+    }).addTo(map.current);
+
+    return () => {
+      // Cleanup
+    };
+  }, [geoData, driftData, hoveredCounty, getColor, onCountyClick]);
 
   if (loading) {
     return (
@@ -164,25 +166,13 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
     );
   }
 
-  // @ts-ignore - using any type to bypass react-leaflet type issues
-  const MapContent = () => (
+  return (
     <div className="w-full border-2 border-red-600 rounded-lg overflow-hidden shadow-lg">
-      <div className="w-full h-96 md:h-[500px] bg-slate-50 relative">
-        {geoData && (
-          <DynamicMapContainer
-            center={[32.9866, -83.6487]}
-            zoom={7}
-            style={{ height: '100%', width: '100%' }}
-            className="z-0"
-          >
-            <DynamicTileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; OpenStreetMap contributors"
-            />
-            <DynamicGeoJSON data={geoData} onEachFeature={onEachFeature} />
-          </DynamicMapContainer>
-        )}
-      </div>
+      <div
+        ref={mapContainer}
+        className="w-full h-96 md:h-[500px] bg-slate-50 relative"
+        style={{ position: 'relative' }}
+      />
 
       <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-t-2 border-red-600 px-4 py-3">
         <h3 className="text-xs font-bold text-slate-900 mb-2">Voter Drift (2026 vs 2016)</h3>
@@ -203,6 +193,5 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
       </div>
     </div>
   );
-
-  return <MapContent />;
+}
 }
