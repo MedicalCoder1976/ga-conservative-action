@@ -1,0 +1,225 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Appling",
+        "FIPS": "13001"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-82.724, 31.769], [-82.724, 32.049], [-82.410, 32.049], [-82.410, 31.769], [-82.724, 31.769]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Atkinson",
+        "FIPS": "13003"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-82.820, 31.228], [-82.820, 31.473], [-82.511, 31.473], [-82.511, 31.228], [-82.820, 31.228]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bacon",
+        "FIPS": "13005"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-82.503, 30.957], [-82.503, 31.230], [-82.165, 31.230], [-82.165, 30.957], [-82.503, 30.957]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Baker",
+        "FIPS": "13007"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-84.654, 31.072], [-84.654, 31.213], [-84.510, 31.213], [-84.510, 31.072], [-84.654, 31.072]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Baldwin",
+        "FIPS": "13009"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-83.457, 32.769], [-83.457, 33.056], [-83.075, 33.056], [-83.075, 32.769], [-83.457, 32.769]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bartow",
+        "FIPS": "13011"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-84.767, 33.979], [-84.767, 34.370], [-84.172, 34.370], [-84.172, 33.979], [-84.767, 33.979]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ben Hill",
+        "FIPS": "13013"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-83.207, 31.667], [-83.207, 31.912], [-82.887, 31.912], [-82.887, 31.667], [-83.207, 31.667]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bibb",
+        "FIPS": "13015"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-83.666, 32.420], [-83.666, 32.729], [-83.306, 32.729], [-83.306, 32.420], [-83.666, 32.420]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bleckley",
+        "FIPS": "13017"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-83.457, 32.397], [-83.457, 32.564], [-83.195, 32.564], [-83.195, 32.397], [-83.457, 32.397]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Brantley",
+        "FIPS": "13019"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-81.472, 31.052], [-81.472, 31.336], [-81.151, 31.336], [-81.151, 31.052], [-81.472, 31.052]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Brooks",
+        "FIPS": "13021"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-83.330, 30.728], [-83.330, 31.034], [-82.945, 31.034], [-82.945, 30.728], [-83.330, 30.728]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bryan",
+        "FIPS": "13023"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-81.325, 31.907], [-81.325, 32.199], [-80.890, 32.199], [-80.890, 31.907], [-81.325, 31.907]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bulloch",
+        "FIPS": "13025"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-81.818, 32.084], [-81.818, 32.447], [-81.405, 32.447], [-81.405, 32.084], [-81.818, 32.084]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Burke",
+        "FIPS": "13027"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-82.265, 33.287], [-82.265, 33.519], [-81.856, 33.519], [-81.856, 33.287], [-82.265, 33.287]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Butts",
+        "FIPS": "13029"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-83.886, 32.750], [-83.886, 32.945], [-83.619, 32.945], [-83.619, 32.750], [-83.886, 32.750]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Calhoun",
+        "FIPS": "13031"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-84.733, 30.975], [-84.733, 31.139], [-84.541, 31.139], [-84.541, 30.975], [-84.733, 30.975]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Camden",
+        "FIPS": "13033"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-81.396, 30.650], [-81.396, 31.055], [-80.826, 31.055], [-80.826, 30.650], [-81.396, 30.650]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Campbell",
+        "FIPS": "13035"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-84.628, 33.191], [-84.628, 33.459], [-84.335, 33.459], [-84.335, 33.191], [-84.628, 33.191]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Carroll",
+        "FIPS": "13037"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-85.254, 33.503], [-85.254, 33.722], [-84.882, 33.722], [-84.882, 33.503], [-85.254, 33.503]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Catoosa",
+        "FIPS": "13039"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-85.302, 34.956], [-85.302, 35.054], [-85.117, 35.054], [-85.117, 34.956], [-85.302, 34.956]]]
+      }
+    }
+  ]
+}
