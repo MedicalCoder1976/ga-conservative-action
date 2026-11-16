@@ -1,59 +1,8 @@
 'use client';
 
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { GEORGIA_COUNTIES } from '@/lib/constants/georgia-counties';
-
-const GEO_URL = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json";
-
-// Georgia FIPS codes start with 13
-const isGeorgia = (geo: any) => geo.id?.toString().startsWith('13');
-
-// Map FIPS county names to Georgia county names
-const FIPS_TO_COUNTY: Record<string, string> = {
-  '13001': 'Appling', '13003': 'Atkinson', '13005': 'Bacon', '13007': 'Baker',
-  '13009': 'Baldwin', '13011': 'Banks', '13013': 'Barrow', '13015': 'Bartow',
-  '13017': 'Ben Hill', '13019': 'Berrien', '13021': 'Bibb', '13023': 'Bleckley',
-  '13025': 'Brantley', '13027': 'Brooks', '13029': 'Bryan', '13031': 'Bulloch',
-  '13033': 'Burke', '13035': 'Butts', '13037': 'Calhoun', '13039': 'Camden',
-  '13041': 'Campbell', '13043': 'Candler', '13045': 'Carroll', '13047': 'Catoosa',
-  '13049': 'Charlton', '13051': 'Chatham', '13053': 'Chattahoochee', '13055': 'Chattooga',
-  '13057': 'Cherokee', '13059': 'Clarke', '13061': 'Clay', '13063': 'Clayton',
-  '13065': 'Clinch', '13067': 'Cobb', '13069': 'Coffee', '13071': 'Colquitt',
-  '13073': 'Columbia', '13075': 'Cook', '13077': 'Coweta', '13079': 'Crawford',
-  '13081': 'Crisp', '13083': 'Dade', '13085': 'Dawson', '13087': 'Decatur',
-  '13089': 'DeKalb', '13091': 'Dodge', '13093': 'Dooly', '13095': 'Dougherty',
-  '13097': 'Douglas', '13099': 'Early', '13101': 'Echols', '13103': 'Effingham',
-  '13105': 'Elbert', '13107': 'Emanuel', '13109': 'Evans', '13111': 'Fannin',
-  '13113': 'Fayette', '13115': 'Floyd', '13117': 'Forsyth', '13119': 'Franklin',
-  '13121': 'Fulton', '13123': 'Gilmer', '13125': 'Glascock', '13127': 'Glynn',
-  '13129': 'Gordon', '13131': 'Grady', '13133': 'Greene', '13135': 'Gwinnett',
-  '13137': 'Habersham', '13139': 'Hall', '13141': 'Hancock', '13143': 'Haralson',
-  '13145': 'Harris', '13147': 'Hart', '13149': 'Heard', '13151': 'Henry',
-  '13153': 'Houston', '13155': 'Irwin', '13157': 'Jackson', '13159': 'Jasper',
-  '13161': 'Jeff Davis', '13163': 'Jefferson', '13165': 'Jenkins', '13167': 'Johnson',
-  '13169': 'Jones', '13171': 'Lamar', '13173': 'Lanier', '13175': 'Laurens',
-  '13177': 'Lee', '13179': 'Liberty', '13181': 'Lincoln', '13183': 'Long',
-  '13185': 'Lowndes', '13187': 'Lumpkin', '13189': 'Macon', '13191': 'Madison',
-  '13193': 'Marion', '13195': 'McDuffie', '13197': 'McIntosh', '13199': 'Meriwether',
-  '13201': 'Miller', '13205': 'Milton', '13207': 'Mitchell', '13209': 'Monroe',
-  '13211': 'Montgomery', '13213': 'Morgan', '13215': 'Murray', '13217': 'Muscogee',
-  '13219': 'Newton', '13221': 'Oconee', '13223': 'Oglethorpe', '13225': 'Paulding',
-  '13227': 'Peach', '13229': 'Pickens', '13231': 'Pierce', '13233': 'Pike',
-  '13235': 'Polk', '13237': 'Pulaski', '13239': 'Putnam', '13241': 'Quitman',
-  '13243': 'Rabun', '13245': 'Randolph', '13247': 'Richmond', '13249': 'Rockdale',
-  '13251': 'Schley', '13253': 'Screven', '13255': 'Seminole', '13257': 'Spalding',
-  '13259': 'Stephens', '13261': 'Stewart', '13263': 'Sumter', '13265': 'Talbot',
-  '13267': 'Taliaferro', '13269': 'Tattnall', '13271': 'Taylor', '13273': 'Telfair',
-  '13275': 'Terrell', '13277': 'Thomas', '13279': 'Tift', '13281': 'Toombs',
-  '13283': 'Towns', '13285': 'Treutlen', '13287': 'Troup', '13289': 'Turner',
-  '13291': 'Twiggs', '13293': 'Union', '13295': 'Upson', '13297': 'Walker',
-  '13299': 'Walton', '13301': 'Ware', '13303': 'Warren', '13305': 'Washington',
-  '13307': 'Wayne', '13309': 'Webster', '13311': 'Wheeler', '13313': 'White',
-  '13315': 'Whitfield', '13317': 'Wilcox', '13319': 'Wilkes', '13321': 'Wilkinson',
-  '13323': 'Worth'
-};
 
 interface DriftData {
   county: string;
@@ -74,7 +23,7 @@ const ELECTIONS = [
   { year: 2018, label: '2018' },
 ];
 
-export default function GeorgiaVoterDriftMap({ 
+export default function GeorgiaVoterDriftMapFixed({ 
   onCountyClick 
 }: {
   onCountyClick?: (county: string) => void;
@@ -84,11 +33,13 @@ export default function GeorgiaVoterDriftMap({
   const [hoveredCounty, setHoveredCounty] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch voter drift data from Supabase
   useEffect(() => {
     const fetchVoterDrift = async () => {
       setLoading(true);
+      setError(null);
       try {
         const supabase = createClient();
         
@@ -106,6 +57,7 @@ export default function GeorgiaVoterDriftMap({
 
         if (err2016 || errCurrent) {
           console.error('Error fetching drift data:', err2016 || errCurrent);
+          setError('Failed to load election data');
           setDriftData({});
         } else {
           const baselineMap = new Map();
@@ -154,6 +106,7 @@ export default function GeorgiaVoterDriftMap({
         }
       } catch (err) {
         console.error('Error:', err);
+        setError('Failed to load map data');
         setDriftData({});
       } finally {
         setLoading(false);
@@ -162,10 +115,6 @@ export default function GeorgiaVoterDriftMap({
 
     fetchVoterDrift();
   }, [selectedYear]);
-
-  const getCountyName = (fips: string) => {
-    return FIPS_TO_COUNTY[fips] || null;
-  };
 
   const getColor = (countyName: string | null) => {
     if (!countyName) return '#e5e7eb';
@@ -177,8 +126,7 @@ export default function GeorgiaVoterDriftMap({
     const absDrift = Math.abs(drift);
 
     if (absDrift < 1) {
-      // Green baseline
-      return '#22c55e';
+      return '#22c55e'; // Green baseline
     } else if (drift > 0) {
       // Republican gains (red)
       if (absDrift < 3) return '#ef4444';
@@ -203,14 +151,12 @@ export default function GeorgiaVoterDriftMap({
     return 'Even';
   };
 
-  const handleMouseOver = (e: React.MouseEvent, countyName: string | null) => {
-    if (!countyName) return;
-    
-    setHoveredCounty(countyName);
-    const data = driftData[countyName];
+  const handleCountyHover = (county: string, e: React.MouseEvent) => {
+    setHoveredCounty(county);
+    const data = driftData[county];
     const tooltipText = data 
-      ? `${countyName}: ${getDriftLabel(data.drift_pct)} (2016→${selectedYear})`
-      : countyName;
+      ? `${county}: ${getDriftLabel(data.drift_pct)} (2016→${selectedYear})`
+      : county;
     setTooltip({
       x: e.clientX,
       y: e.clientY,
@@ -218,15 +164,9 @@ export default function GeorgiaVoterDriftMap({
     });
   };
 
-  const handleMouseOut = () => {
+  const handleCountyLeave = () => {
     setHoveredCounty(null);
     setTooltip(null);
-  };
-
-  const handleCountyClick = (countyName: string | null) => {
-    if (countyName && onCountyClick) {
-      onCountyClick(countyName);
-    }
   };
 
   return (
@@ -272,60 +212,67 @@ export default function GeorgiaVoterDriftMap({
       </div>
 
       {/* Map Container */}
-      <div className="w-full h-screen sm:h-[600px] md:h-[700px] lg:h-screen relative flex items-center justify-center bg-white">
+      <div className="w-full h-screen sm:h-[600px] md:h-[700px] lg:h-screen relative flex items-center justify-center bg-white overflow-auto">
         {loading ? (
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
             <p className="text-slate-600 font-semibold">Loading Georgia map...</p>
           </div>
+        ) : error ? (
+          <div className="text-center p-8">
+            <div className="text-red-600 font-bold mb-4">⚠️ Error Loading Map</div>
+            <p className="text-slate-600 mb-4">{error}</p>
+            <div className="mt-6">
+              <h4 className="font-bold text-slate-900 mb-3">🗺️ Georgia Counties Grid View</h4>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-w-2xl">
+                {GEORGIA_COUNTIES.map((county) => {
+                  const data = driftData[county];
+                  const color = getColor(county);
+                  return (
+                    <button
+                      key={county}
+                      onClick={() => onCountyClick?.(county)}
+                      onMouseEnter={(e) => handleCountyHover(county, e)}
+                      onMouseLeave={handleCountyLeave}
+                      className="p-2 rounded text-xs font-semibold text-white transition hover:opacity-80 cursor-pointer"
+                      style={{ backgroundColor: color }}
+                      title={data ? `${county}: ${getDriftLabel(data.drift_pct)}` : county}
+                    >
+                      {county.split(' ')[0]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         ) : (
-          <ComposableMap projection="geoAlbersUsa">
-            <Geographies geography={GEO_URL}>
-              {({ geographies }) =>
-                geographies
-                  .filter((geo) => isGeorgia(geo))
-                  .map((geo) => {
-                    const countyName = getCountyName(geo.id as string);
-                    const color = getColor(countyName);
-                    const isHovered = hoveredCounty === countyName;
-
-                    return (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        style={{
-                          default: {
-                            fill: color,
-                            stroke: isHovered ? '#fbbf24' : '#fff',
-                            strokeWidth: isHovered ? 2 : 0.75,
-                            outline: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 150ms',
-                          },
-                          hover: {
-                            fill: color,
-                            stroke: '#fbbf24',
-                            strokeWidth: 2,
-                            outline: 'none',
-                            cursor: 'pointer',
-                          },
-                          pressed: {
-                            fill: color,
-                            stroke: '#fbbf24',
-                            strokeWidth: 2,
-                            outline: 'none',
-                            cursor: 'pointer',
-                          },
-                        } as any}
-                        onMouseEnter={(e) => handleMouseOver(e as any, countyName)}
-                        onMouseLeave={handleMouseOut}
-                        onClick={() => handleCountyClick(countyName)}
-                      />
-                    );
-                  })
-              }
-            </Geographies>
-          </ComposableMap>
+          <div className="w-full h-full p-8">
+            <h4 className="font-bold text-slate-900 mb-4">Georgia Counties - Voter Drift {selectedYear} vs 2016</h4>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+              {GEORGIA_COUNTIES.map((county) => {
+                const data = driftData[county];
+                const color = getColor(county);
+                const isHovered = hoveredCounty === county;
+                
+                return (
+                  <button
+                    key={county}
+                    onClick={() => onCountyClick?.(county)}
+                    onMouseEnter={(e) => handleCountyHover(county, e)}
+                    onMouseLeave={handleCountyLeave}
+                    className={`p-3 rounded font-semibold text-white transition ${
+                      isHovered ? 'ring-2 ring-yellow-400 scale-105' : ''
+                    } hover:opacity-80 cursor-pointer`}
+                    style={{ backgroundColor: color }}
+                    title={data ? `${county}: ${getDriftLabel(data.drift_pct)}` : county}
+                  >
+                    <div className="text-xs">{county}</div>
+                    {data && <div className="text-xs font-bold mt-1">{getDriftLabel(data.drift_pct)}</div>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
 
