@@ -194,4 +194,3 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
     </div>
   );
 }
-}
