@@ -194,8 +194,6 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
                     line-height: 1;
                   ">${countyName}</div>`,
                   className: 'county-label-marker',
-                  iconSize: [auto, 'auto'],
-                  iconAnchor: [undefined, undefined],
                 }),
               }
             );
