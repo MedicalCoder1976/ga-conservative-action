@@ -369,11 +369,6 @@ function CountyDashboardContent() {
               <p className="text-blue-300 font-bold">Active Players</p>
               <p className="text-sm text-blue-400/70 mt-2">Competing in {decodedCounty}</p>
             </div>
-            <div className="bg-gradient-to-br from-yellow-900/40 to-yellow-800/40 border-2 border-yellow-600/50 rounded-xl p-6">
-              <div className="text-4xl font-black text-yellow-400 mb-2">+45</div>
-              <p className="text-yellow-300 font-bold">This Week</p>
-              <p className="text-sm text-yellow-400/70 mt-2">Keep building momentum!</p>
-            </div>
           </div>
         </div>
 
