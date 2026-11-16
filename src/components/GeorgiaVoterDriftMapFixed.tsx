@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { GEORGIA_COUNTIES } from '@/lib/constants/georgia-counties';
 
 interface DriftData {
@@ -35,78 +34,24 @@ export default function GeorgiaVoterDriftMapFixed({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch voter drift data from Supabase
+  // Fetch voter drift data from API (uses service role key on backend)
   useEffect(() => {
     const fetchVoterDrift = async () => {
       setLoading(true);
       setError(null);
       try {
-        const supabase = createClient();
+        const response = await fetch(`/api/voter-drift?year=${selectedYear}`);
         
-        // Fetch 2016 baseline data
-        const { data: baseline2016, error: err2016 } = await supabase
-          .from('county_voter_statistics')
-          .select('county, democrat_votes, republican_votes, total_votes')
-          .eq('election_year', 2016);
-
-        // Fetch current year data
-        const { data: currentYear, error: errCurrent } = await supabase
-          .from('county_voter_statistics')
-          .select('county, democrat_votes, republican_votes, total_votes')
-          .eq('election_year', selectedYear);
-
-        if (err2016 || errCurrent) {
-          console.error('Error fetching drift data:', err2016 || errCurrent);
-          setError('Failed to load election data');
-          setDriftData({});
-        } else {
-          const baselineMap = new Map();
-          const currentMap = new Map();
-          
-          baseline2016?.forEach((row: any) => {
-            baselineMap.set(row.county, {
-              dem: row.democrat_votes || 0,
-              rep: row.republican_votes || 0,
-              total: row.total_votes || 1,
-            });
-          });
-
-          currentYear?.forEach((row: any) => {
-            currentMap.set(row.county, {
-              dem: row.democrat_votes || 0,
-              rep: row.republican_votes || 0,
-              total: row.total_votes || 1,
-            });
-          });
-
-          const dataMap: Record<string, DriftData> = {};
-          GEORGIA_COUNTIES.forEach((countyName) => {
-            const baseline = baselineMap.get(countyName);
-            const current = currentMap.get(countyName);
-
-            if (baseline && current) {
-              const baselineRepPct = (baseline.rep / baseline.total) * 100;
-              const currentRepPct = (current.rep / current.total) * 100;
-              const drift = currentRepPct - baselineRepPct;
-
-              dataMap[countyName] = {
-                county: countyName,
-                drift_pct: drift,
-                dem_votes_2016: baseline.dem,
-                rep_votes_2016: baseline.rep,
-                total_votes_2016: baseline.total,
-                dem_votes_current: current.dem,
-                rep_votes_current: current.rep,
-                total_votes_current: current.total,
-              };
-            }
-          });
-
-          setDriftData(dataMap);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch voter drift data');
         }
+
+        const { driftData: fetchedData } = await response.json();
+        setDriftData(fetchedData || {});
       } catch (err) {
-        console.error('Error:', err);
-        setError('Failed to load map data');
+        console.error('Error fetching voter drift:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load map data');
         setDriftData({});
       } finally {
         setLoading(false);
