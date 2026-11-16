@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronRight, MapPin, TrendingUp, Users, BookOpen, ArrowRight } from 'lucide-react'
-import { VoterDriftMap } from '@/components/VoterDriftMap'
+import GeorgiaVoterDriftMap from '@/components/GeorgiaVoterDriftMap'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -101,7 +101,9 @@ export default function HomePage() {
 
             {/* RIGHT: Interactive Map (shown first on mobile via order, right on desktop) */}
             <div className="order-1 lg:order-2" id="map">
-              <VoterDriftMap />
+              <GeorgiaVoterDriftMap 
+                onCountyClick={handleCountyClick}
+              />
             </div>
           </div>
         </div>
