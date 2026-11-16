@@ -116,7 +116,7 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
 
     // Initialize map only once
     if (!map.current) {
-      map.current = L.map(mapContainer.current).setView([32.9866, -83.6487], 7);
+      map.current = L.map(mapContainer.current).setView([32.5, -83.5], 6.5);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
@@ -180,21 +180,22 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
               {
                 icon: L.divIcon({
                   html: `<div style="
-                    background: rgba(255, 255, 255, 0.95);
-                    padding: 2px 4px;
-                    border-radius: 3px;
-                    font-size: 11px;
+                    background: rgba(255, 255, 255, 0.92);
+                    padding: 1px 2px;
+                    border-radius: 2px;
+                    font-size: 9px;
                     font-weight: bold;
                     color: #334155;
                     text-align: center;
-                    border: 1px solid #94a3b8;
+                    border: 1px solid #cbd5e1;
                     white-space: nowrap;
                     pointer-events: none;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+                    line-height: 1;
                   ">${countyName}</div>`,
                   className: 'county-label-marker',
-                  iconSize: [120, 20],
-                  iconAnchor: [60, 10],
+                  iconSize: [auto, 'auto'],
+                  iconAnchor: [undefined, undefined],
                 }),
               }
             );
@@ -237,8 +238,8 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
     <div className="w-full border-2 border-red-600 rounded-lg overflow-hidden shadow-lg">
       <div
         ref={mapContainer}
-        className="w-full h-96 md:h-[500px] bg-slate-50 relative"
-        style={{ position: 'relative' }}
+        className="w-full h-screen md:h-screen bg-slate-50 relative"
+        style={{ position: 'relative', minHeight: '600px', maxHeight: '90vh' }}
       />
 
       <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-t-2 border-red-600 px-4 py-3">
