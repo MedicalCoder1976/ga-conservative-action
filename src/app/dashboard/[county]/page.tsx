@@ -364,11 +364,6 @@ function CountyDashboardContent() {
               <p className="text-red-300 font-bold">Your County Score</p>
               <p className="text-sm text-red-400/70 mt-2">Rank this week: #3 in Region</p>
             </div>
-            <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 border-2 border-blue-600/50 rounded-xl p-6">
-              <div className="text-4xl font-black text-blue-400 mb-2">24</div>
-              <p className="text-blue-300 font-bold">Active Players</p>
-              <p className="text-sm text-blue-400/70 mt-2">Competing in {decodedCounty}</p>
-            </div>
           </div>
         </div>
 

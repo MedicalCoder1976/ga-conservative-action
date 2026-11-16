@@ -1,0 +1,19 @@
+# Supabase configuration
+[project]
+name = "ga-conservative-action"
+database_url = ""
+
+[api]
+enabled = true
+
+[auth]
+enabled = true
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[analytics]
+enabled = false
