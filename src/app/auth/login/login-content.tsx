@@ -44,6 +44,14 @@ export default function LoginPageContent() {
     setSuccess(false)
 
     try {
+      // If no credentials provided, allow guest access
+      if (!username && !password) {
+        // Create anonymous session or redirect to dashboard
+        console.log('🔐 Guest access - redirecting to dashboard')
+        router.push('/dashboard')
+        return
+      }
+
       // Support both email and username login
       let email = username
       
@@ -77,6 +85,12 @@ export default function LoginPageContent() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGuestAccess = () => {
+    setLoading(true)
+    // Redirect to dashboard without authentication
+    router.push('/dashboard')
   }
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -194,47 +208,65 @@ export default function LoginPageContent() {
 
             {/* Password Login Form */}
             {loginMode === 'password' && (
-              <form onSubmit={handlePasswordSignIn} className="space-y-4">
-                <div>
-                  <label htmlFor="username" className="block text-sm font-bold mb-2 text-slate-900">
-                    Username or Email
-                  </label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="demouser or demo@gaissues.local"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
+              <>
+                <form onSubmit={handlePasswordSignIn} className="space-y-4">
+                  <div>
+                    <label htmlFor="username" className="block text-sm font-bold mb-2 text-slate-900">
+                      Username or Email
+                    </label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="demouser or demo@gaissues.local"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      disabled={loading}
+                      className="bg-white border-2 border-red-600 text-slate-900 placeholder:text-slate-400 text-lg py-3"
+                    />
+                    <p className="text-xs text-slate-600 mt-1 font-semibold">Try: demouser or fulton_volunteer (optional)</p>
+                  </div>
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-bold mb-2 text-slate-900">
+                      Password
+                    </label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                      className="bg-white border-2 border-red-600 text-slate-900 placeholder:text-slate-400 text-lg py-3"
+                    />
+                    <p className="text-xs text-slate-600 mt-1 font-semibold">Try: demo12345 or fulton123 (optional)</p>
+                  </div>
+                  <button
+                    type="submit"
                     disabled={loading}
-                    className="bg-white border-2 border-red-600 text-slate-900 placeholder:text-slate-400 text-lg py-3"
-                  />
-                  <p className="text-xs text-slate-600 mt-1 font-semibold">Try: demouser or fulton_volunteer</p>
+                    className="w-full px-6 py-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold rounded-lg transition text-lg"
+                  >
+                    {loading ? 'Signing in...' : 'Sign In'}
+                  </button>
+                </form>
+                
+                {/* Guest Access Option */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t-2 border-slate-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-slate-600 font-semibold">or</span>
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-bold mb-2 text-slate-900">
-                    Password
-                  </label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    className="bg-white border-2 border-red-600 text-slate-900 placeholder:text-slate-400 text-lg py-3"
-                  />
-                  <p className="text-xs text-slate-600 mt-1 font-semibold">Try: demo12345 or fulton123</p>
-                </div>
+                
                 <button
-                  type="submit"
+                  onClick={handleGuestAccess}
                   disabled={loading}
-                  className="w-full px-6 py-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold rounded-lg transition text-lg"
+                  className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-lg transition text-lg"
                 >
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? 'Loading...' : 'Continue as Guest'}
                 </button>
-              </form>
+              </>
             )}
 
             {/* OAuth Coming Soon */}

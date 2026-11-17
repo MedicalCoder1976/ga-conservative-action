@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { VoterDriftMap } from '@/components/VoterDriftMap'
+import GeorgiaCountyMapLeaflet from '@/components/GeorgiaCountyMapLeaflet'
 import { MapPin, Search, Zap, Trophy } from 'lucide-react'
 
 interface County {
@@ -84,7 +84,9 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <VoterDriftMap />
+            <div className="h-[700px]">
+              <GeorgiaCountyMapLeaflet onCountyClick={(county) => router.push(`/dashboard/${encodeURIComponent(county)}`)} />
+            </div>
           )}
         </div>
 

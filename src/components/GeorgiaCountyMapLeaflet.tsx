@@ -1,9 +1,8 @@
 // @ts-nocheck
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
 interface DriftData {
   [key: string]: { drift_pct: number };
@@ -15,13 +14,32 @@ interface GeorgiaCountyMapLeafletProps {
 
 export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCountyMapLeafletProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<L.Map | null>(null);
-  const geoJsonLayer = useRef<L.GeoJSON | null>(null);
+  const map = useRef<any | null>(null);
+  const geoJsonLayer = useRef<any | null>(null);
   const [driftData, setDriftData] = useState<DriftData>({});
   const [geoData, setGeoData] = useState<any>(null);
   const [hoveredCounty, setHoveredCounty] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const labelsLayerGroup = useRef<any | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(6.5);
+  const labelMarkersRef = useRef<Map<string, any>>(new Map());
+  const L = useRef<any>(null);
+
+  // Load Leaflet dynamically
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    import('leaflet').then((module) => {
+      L.current = module.default;
+    });
+
+    // Load CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(link);
+  }, []);
 
   // Fetch drift data
   useEffect(() => {
@@ -43,7 +61,7 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
   useEffect(() => {
     const fetchGeoData = async () => {
       try {
-        const response = await fetch('/data/georgia-counties-detailed.json');
+        const response = await fetch('/data/georgia-counties-all-159.json');
         if (!response.ok) throw new Error('Failed to fetch map data');
         const data = await response.json();
         setGeoData(data);
@@ -112,16 +130,19 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
 
   // Initialize map and add layers
   useEffect(() => {
-    if (!mapContainer.current || !geoData) return;
+    if (!mapContainer.current || !geoData || !L.current) return;
 
     // Initialize map only once
     if (!map.current) {
-      map.current = L.map(mapContainer.current).setView([32.5, -83.5], 6.5);
+      map.current = L.current.map(mapContainer.current).setView([32.5, -83.5], 6.5);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.current.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
       }).addTo(map.current);
+
+      // Create labels layer group
+      labelsLayerGroup.current = L.current.layerGroup().addTo(map.current);
     }
 
     // Remove old GeoJSON layer if it exists
@@ -129,8 +150,13 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
       map.current.removeLayer(geoJsonLayer.current);
     }
 
+    // Clear old labels
+    if (labelsLayerGroup.current) {
+      labelsLayerGroup.current.clearLayers();
+    }
+
     // Add GeoJSON layer
-    geoJsonLayer.current = L.geoJSON(geoData, {
+    geoJsonLayer.current = L.current.geoJSON(geoData, {
       style: (feature) => {
         const countyName = feature?.properties?.name;
         return {
@@ -157,14 +183,26 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
         layer.on('mouseover', () => {
           setHoveredCounty(countyName);
           layer.setStyle({ weight: 3, fillOpacity: 0.9 });
+          // Show this county's label with full opacity
+          const marker = labelMarkersRef.current.get(countyName);
+          if (marker) {
+            marker.setOpacity(1);
+            marker.setZIndexOffset(1000);
+          }
         });
 
         layer.on('mouseout', () => {
           setHoveredCounty(null);
           layer.setStyle({ weight: 1, fillOpacity: 0.7 });
+          // Dim this county's label
+          const marker = labelMarkersRef.current.get(countyName);
+          if (marker) {
+            marker.setOpacity(0.4);
+            marker.setZIndexOffset(0);
+          }
         });
 
-        // Add county name label at centroid
+        // Add county name label at centroid using text instead of markers for better performance
         if ((feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') && feature.geometry.coordinates) {
           let coordinates = feature.geometry.coordinates;
           
@@ -174,32 +212,32 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
           }
           
           const centroid = getCentroid(coordinates);
-          if (centroid) {
-            const labelMarker = L.marker(
-              [centroid[1], centroid[0]],
-              {
-                icon: L.divIcon({
-                  html: `<div style="
-                    background: rgba(255, 255, 255, 0.92);
-                    padding: 1px 2px;
-                    border-radius: 2px;
-                    font-size: 9px;
-                    font-weight: bold;
-                    color: #334155;
-                    text-align: center;
-                    border: 1px solid #cbd5e1;
-                    white-space: nowrap;
-                    pointer-events: none;
-                    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-                    line-height: 1;
-                  ">${countyName}</div>`,
-                  className: 'county-label-marker',
-                }),
-              }
-            );
-            if (map.current) {
-              labelMarker.addTo(map.current);
-            }
+          if (centroid && labelsLayerGroup.current) {
+            const labelDiv = L.current.divIcon({
+              html: `<div class="leaflet-county-label" style="
+                font-size: 7px;
+                font-weight: 700;
+                color: #0f172a;
+                text-align: center;
+                white-space: nowrap;
+                pointer-events: none;
+                cursor: default;
+                line-height: 1;
+                font-family: system-ui, -apple-system, sans-serif;
+                text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(255, 255, 255, 0.8), 1px -1px 2px rgba(255, 255, 255, 0.8), -1px 1px 2px rgba(255, 255, 255, 0.8);
+              ">${countyName}</div>`,
+              className: '',
+              iconSize: [45, 14],
+              iconAnchor: [23, 7],
+            });
+
+            const labelMarker = L.current.marker([centroid[1], centroid[0]], { 
+              icon: labelDiv,
+              opacity: 0.4,
+              interactive: false
+            });
+            labelMarker.addTo(labelsLayerGroup.current);
+            labelMarkersRef.current.set(countyName, labelMarker);
           }
         }
       },
