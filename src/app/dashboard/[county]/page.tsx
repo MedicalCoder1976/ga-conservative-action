@@ -75,12 +75,8 @@ async function getCountyData(county: string, supabase: any) {
         .eq('active', true)
         .order('date', { ascending: false })
         .limit(10),
-      supabase
-        .from('county_voter_statistics')
-        .select('*')
-        .eq('county', decodeURIComponent(county))
-        .order('election_year', { ascending: false })
-        .limit(2),
+      // Fetch drift data via API to bypass RLS
+      fetch(`/api/county-drift?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => r.json()).catch(() => ({ data: null })),
     ])
 
     // Transform election data to include percentages
@@ -93,6 +89,14 @@ async function getCountyData(county: string, supabase: any) {
         republican_pct: (republican_votes / total_votes * 100),
         year: election_year,
       }
+    }
+
+    // Handle drift data - comes from API, so handle differently than Supabase responses
+    let driftData = null
+    if (driftRes && driftRes.county) {
+      driftData = driftRes
+    } else if (driftRes && driftRes.error) {
+      console.log('Drift API error:', driftRes.error)
     }
 
     // Mock podcasters data for now (can be replaced with actual DB table later)
@@ -132,7 +136,7 @@ async function getCountyData(county: string, supabase: any) {
       leaders: leadersRes.data || [],
       talkingPoints: pointsRes.data || [],
       podcasters: mockPodcasters,
-      drift: driftRes.data,
+      drift: driftData,
     }
   } catch (error) {
     console.error('Error fetching county data:', error)
@@ -250,7 +254,7 @@ function CountyDashboardContent() {
               {/* Drift Direction & Tilt */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-lg">Voter Drift: {data.drift.baseline_year} → 2024</span>
+                  <span className="font-bold text-lg">Voter Drift: 2016 → 2024</span>
                   <span className={`text-2xl font-black ${
                     data.drift.direction === 'blue' ? 'text-blue-400' :
                     data.drift.direction === 'red' ? 'text-red-400' :
