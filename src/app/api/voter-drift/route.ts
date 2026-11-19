@@ -22,13 +22,13 @@ export async function GET(request: NextRequest) {
     // Fetch 2016 baseline data
     const { data: baseline2016, error: err2016 } = await supabase
       .from('county_voter_statistics')
-      .select('county, democrat_votes, republican_votes, total_votes')
+      .select('county, democrat_votes, republican_votes, total_votes, registered_voters')
       .eq('election_year', 2016);
 
     // Fetch current year data
     const { data: currentYear, error: errCurrent } = await supabase
       .from('county_voter_statistics')
-      .select('county, democrat_votes, republican_votes, total_votes')
+      .select('county, democrat_votes, republican_votes, total_votes, registered_voters')
       .eq('election_year', parseInt(selectedYear));
 
     if (err2016 || errCurrent) {
@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
         dem: row.democrat_votes || 0,
         rep: row.republican_votes || 0,
         total: row.total_votes || 1,
+        registered_voters: row.registered_voters || 0,
       });
     });
 
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
         dem: row.democrat_votes || 0,
         rep: row.republican_votes || 0,
         total: row.total_votes || 1,
+        registered_voters: row.registered_voters || 0,
       });
     });
 
@@ -88,6 +90,12 @@ export async function GET(request: NextRequest) {
         const baselineRepPct = (baseline.rep / baseline.total) * 100;
         const currentRepPct = (current.rep / current.total) * 100;
         const drift = currentRepPct - baselineRepPct;
+        
+        // Calculate population growth
+        const popGrowth = current.registered_voters - baseline.registered_voters;
+        const popGrowthPct = baseline.registered_voters > 0 
+          ? (popGrowth / baseline.registered_voters) * 100 
+          : 0;
 
         driftData[countyName] = {
           county: countyName,
@@ -95,9 +103,13 @@ export async function GET(request: NextRequest) {
           dem_votes_2016: baseline.dem,
           rep_votes_2016: baseline.rep,
           total_votes_2016: baseline.total,
+          registered_voters_2016: baseline.registered_voters,
           dem_votes_current: current.dem,
           rep_votes_current: current.rep,
           total_votes_current: current.total,
+          registered_voters_current: current.registered_voters,
+          population_growth_absolute: popGrowth,
+          population_growth_pct: popGrowthPct,
         };
       }
     });
