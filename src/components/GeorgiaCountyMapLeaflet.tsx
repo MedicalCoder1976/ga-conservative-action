@@ -48,7 +48,7 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
         const response = await fetch('/api/voter-drift?year=2026');
         if (!response.ok) throw new Error('Failed to fetch drift data');
         const data = await response.json();
-        setDriftData(data);
+        setDriftData(data.driftData);
       } catch (err) {
         console.error('Error fetching drift data:', err);
       }
