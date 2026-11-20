@@ -1,12 +1,35 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
+export async function OPTIONS(request: NextRequest) {
+  return NextResponse.json(
+    {},
+    {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Accept',
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+}
+
 export async function GET(request: NextRequest) {
   try {
+    // Handle CORS and Accept headers
+    const headers = {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept',
+    }
+
     const county = request.nextUrl.searchParams.get('county')
 
     if (!county) {
-      return NextResponse.json({ error: 'County parameter required' }, { status: 400 })
+      return NextResponse.json({ error: 'County parameter required' }, { status: 400, headers })
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -15,7 +38,7 @@ export async function GET(request: NextRequest) {
     if (!supabaseUrl || !serviceKey) {
       return NextResponse.json(
         { error: 'Missing Supabase credentials' },
-        { status: 500 },
+        { status: 500, headers },
       )
     }
 
@@ -34,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     if (driftError) {
       console.error('Drift query error:', driftError)
-      return NextResponse.json({ error: 'County not found' }, { status: 404 })
+      return NextResponse.json({ error: 'County not found' }, { status: 404, headers })
     }
 
     // Get 2016 voter statistics for population
@@ -77,9 +100,9 @@ export async function GET(request: NextRequest) {
       non_voters_current: nonVoters2026,
       turnout_rate_2016: turnout2016,
       turnout_rate_current: turnout2026,
-    })
+    }, { headers })
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: { 'Content-Type': 'application/json' } })
   }
 }

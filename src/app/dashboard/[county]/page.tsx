@@ -86,7 +86,16 @@ async function getCountyData(county: string, supabase: any) {
         .order('date', { ascending: false })
         .limit(10),
       // Fetch drift data via API to bypass RLS
-      fetch(`/api/county-drift?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => r.json()).catch(() => ({ data: null })),
+      fetch(`/api/county-drift?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => {
+        if (!r.ok) {
+          console.error(`Drift API returned ${r.status}:`, r.statusText)
+          return { error: `HTTP ${r.status}` }
+        }
+        return r.json()
+      }).catch(err => {
+        console.error('Drift fetch error:', err)
+        return { error: err.message }
+      }),
     ])
 
     // Transform election data to include percentages
