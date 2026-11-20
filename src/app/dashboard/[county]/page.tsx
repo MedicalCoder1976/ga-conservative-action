@@ -19,6 +19,16 @@ interface CountyData {
   talkingPoints: any[]
   podcasters: any[]
   drift: any
+  population?: {
+    registered_voters_2016: number
+    registered_voters_current: number
+    population_growth_absolute: number
+    population_growth_pct: number
+    non_voters_2016: number
+    non_voters_current: number
+    turnout_rate_2016: number
+    turnout_rate_current: number
+  } | null
 }
 
 async function getCountyData(county: string, supabase: any) {
@@ -137,6 +147,16 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: pointsRes.data || [],
       podcasters: mockPodcasters,
       drift: driftData,
+      population: driftData ? {
+        registered_voters_2016: driftData.registered_voters_2016,
+        registered_voters_current: driftData.registered_voters_current,
+        population_growth_absolute: driftData.population_growth_absolute,
+        population_growth_pct: driftData.population_growth_pct,
+        non_voters_2016: driftData.non_voters_2016,
+        non_voters_current: driftData.non_voters_current,
+        turnout_rate_2016: driftData.turnout_rate_2016,
+        turnout_rate_current: driftData.turnout_rate_current,
+      } : null,
     }
   } catch (error) {
     console.error('Error fetching county data:', error)
@@ -150,6 +170,7 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: [],
       podcasters: [],
       drift: null,
+      population: null,
     }
   }
 }
@@ -188,6 +209,7 @@ function CountyDashboardContent() {
     talkingPoints: [],
     podcasters: [],
     drift: null,
+    population: null,
   })
   const [loading, setLoading] = useState(true)
   const [showIntel, setShowIntel] = useState(false)
@@ -326,6 +348,122 @@ function CountyDashboardContent() {
             </div>
           )}
         </div>
+
+        {/* Population & Turnout Dynamics */}
+        {data.population && (
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
+            <h2 className="text-2xl font-black text-slate-300 mb-6">📊 POPULATION & TURNOUT DYNAMICS</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Registered Voters */}
+              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-blue-500">
+                <h3 className="font-bold text-blue-400 mb-4">Registered Voters</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-slate-400">2016</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.registered_voters_2016?.toLocaleString() || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400">2026</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.registered_voters_current?.toLocaleString() || 'N/A'}
+                    </p>
+                  </div>
+                  <div className={`pt-3 border-t border-slate-600 flex items-center justify-between`}>
+                    <span className="text-sm text-slate-400">Change:</span>
+                    <span className={`text-lg font-bold ${
+                      data.population.population_growth_pct > 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {data.population.population_growth_pct > 0 ? '+' : ''}
+                      {data.population.population_growth_pct?.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Turnout Rates */}
+              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-purple-500">
+                <h3 className="font-bold text-purple-400 mb-4">Turnout Rates</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-slate-400">2016 Turnout</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.turnout_rate_2016?.toFixed(1)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400">2026 Turnout</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.turnout_rate_current?.toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className={`pt-3 border-t border-slate-600`}>
+                    <span className="text-sm text-slate-400">Change: </span>
+                    <span className={`font-bold ${
+                      (data.population.turnout_rate_current - data.population.turnout_rate_2016) > 0 
+                        ? 'text-green-400' 
+                        : 'text-red-400'
+                    }`}>
+                      {(data.population.turnout_rate_current - data.population.turnout_rate_2016) > 0 ? '+' : ''}
+                      {(data.population.turnout_rate_current - data.population.turnout_rate_2016)?.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Non-Voters */}
+              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-orange-500">
+                <h3 className="font-bold text-orange-400 mb-4">Non-Voters</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-slate-400">2016 Non-Voters</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.non_voters_2016?.toLocaleString() || 'N/A'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      ({((data.population.non_voters_2016 / (data.population.registered_voters_2016 || 1)) * 100).toFixed(1)}% of voters)
+                    </p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-600">
+                    <p className="text-sm text-slate-400">2026 Non-Voters</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.non_voters_current?.toLocaleString() || 'N/A'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      ({((data.population.non_voters_current / (data.population.registered_voters_current || 1)) * 100).toFixed(1)}% of voters)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Population Growth */}
+              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-yellow-500">
+                <h3 className="font-bold text-yellow-400 mb-4">Population Change</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-slate-400">Absolute Change</p>
+                    <p className="text-2xl font-bold text-slate-200">
+                      {data.population.population_growth_absolute > 0 ? '+' : ''}
+                      {data.population.population_growth_absolute?.toLocaleString() || 'N/A'}
+                    </p>
+                  </div>
+                  <div className="text-xs text-slate-500 mt-2 p-3 bg-slate-900/50 rounded border border-slate-600">
+                    {data.population.population_growth_pct < -50 
+                      ? '⚠️ Significant decline - verify data'
+                      : data.population.population_growth_pct > 20
+                      ? '📈 Strong growth'
+                      : data.population.population_growth_pct > 0
+                      ? '📊 Modest growth'
+                      : '📉 Declining'
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Today's Mission */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
