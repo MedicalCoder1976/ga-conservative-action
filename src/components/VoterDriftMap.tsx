@@ -20,7 +20,7 @@ export function VoterDriftMap() {
   const [counties, setCounties] = useState<Map<string, CountyDrift>>(new Map())
   const [loading, setLoading] = useState(true)
   const [hoveredCounty, setHoveredCounty] = useState<string | null>(null)
-  const [selectedYear, setSelectedYear] = useState(2026)
+  const [selectedYear, setSelectedYear] = useState(2024)
   const svgRef = useRef<SVGSVGElement>(null)
 
   const fetchVoterDrift = async () => {
@@ -40,13 +40,13 @@ export function VoterDriftMap() {
 
       if (baselineErr || currentErr) {
         console.error('Error fetching drift data:', baselineErr || currentErr)
-        initializeMockDrift()
+        setCounties(new Map())
         return
       }
 
       if (!baselineData || !currentData || baselineData.length === 0 || currentData.length === 0) {
-        console.warn('Insufficient data for drift calculation, using mock data')
-        initializeMockDrift()
+        console.warn('Insufficient authoritative data for drift calculation')
+        setCounties(new Map())
         return
       }
 
@@ -91,44 +91,17 @@ export function VoterDriftMap() {
           }
           countyMap.set(countyName, driftData)
         } else {
-          // Use mock data if we don't have both baseline and current
-          const mockDrift = (Math.random() - 0.5) * 20
-          const driftData: CountyDrift = {
-            name: countyName,
-            drift_pct: mockDrift,
-            dem_drift: mockDrift < 0 ? Math.abs(mockDrift) : 0,
-            rep_drift: mockDrift > 0 ? mockDrift : 0,
-            baseline_year: 2016,
-            current_year: selectedYear,
-          }
-          countyMap.set(countyName, driftData)
+          // Do not fabricate drift values for counties missing authoritative totals.
         }
       })
       
       setCounties(countyMap)
     } catch (err) {
       console.error('Error fetching drift:', err)
-      initializeMockDrift()
+      setCounties(new Map())
     } finally {
       setLoading(false)
     }
-  }
-
-  const initializeMockDrift = () => {
-    const countyMap = new Map<string, CountyDrift>()
-    GEORGIA_COUNTIES.forEach((name) => {
-      const drift = (Math.random() - 0.5) * 20 // Random drift between -10 and +10
-      const driftData: CountyDrift = {
-        name,
-        drift_pct: drift,
-        dem_drift: drift < 0 ? Math.abs(drift) : 0,
-        rep_drift: drift > 0 ? drift : 0,
-        baseline_year: 2016,
-        current_year: 2026,
-      }
-      countyMap.set(name, driftData)
-    })
-    setCounties(countyMap)
   }
 
   useEffect(() => {
@@ -206,7 +179,7 @@ export function VoterDriftMap() {
             Select Election Year for Voter Drift:
           </label>
           <div className="flex flex-wrap gap-2">
-            {[2026, 2024, 2022, 2020, 2018, 2016].map((year) => (
+            {[2024, 2020, 2016].map((year) => (
               <button
                 key={year}
                 onClick={() => setSelectedYear(year)}
@@ -216,7 +189,7 @@ export function VoterDriftMap() {
                     : 'bg-white text-slate-900 border-2 border-slate-300 hover:border-red-600'
                 }`}
               >
-                {year}{year === 2026 ? ' (Most Recent)' : ''}
+                {year}{year === 2024 ? ' (Most Recent)' : ''}
               </button>
             ))}
           </div>
@@ -360,10 +333,10 @@ export function VoterDriftMap() {
               💚 Green baseline = Starting point (2016 baseline)
             </p>
             <p className="text-sm text-red-900 font-semibold mt-2">
-              🔴 Red = Republican gains (shift toward GOP from 2016-2026)
+              🔴 Red = Republican gains (shift toward GOP from 2016-{selectedYear})
             </p>
             <p className="text-sm text-blue-900 font-semibold mt-2">
-              🔵 Blue = Democratic gains (shift toward Democrats from 2016-2026)
+              🔵 Blue = Democratic gains (shift toward Democrats from 2016-{selectedYear})
             </p>
           </div>
         </div>
@@ -375,7 +348,7 @@ export function VoterDriftMap() {
             <p className="text-sm text-slate-700 font-semibold">
               {getCountyLabel(counties.get(hoveredCounty)?.drift_pct ?? 0)}
             </p>
-            <p className="text-xs text-slate-600 mt-1">Click to view county details and 2026 data</p>
+            <p className="text-xs text-slate-600 mt-1">Click to view county details and {selectedYear} data</p>
           </div>
         )}
       </div>

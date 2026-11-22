@@ -73,7 +73,7 @@ export default function DashboardPage() {
         {/* Large Map */}
         <div className="mb-12 sm:mb-16 bg-gradient-to-b from-green-50 to-white rounded-2xl border-2 border-green-600 p-6 sm:p-8 shadow-2xl">
           <div className="mb-4">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Georgia Voter Drift Map (2016-2026)</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Georgia Voter Drift Map (2016-2024)</h2>
             <p className="text-slate-600 text-sm">Green baseline • Red = Republican gains • Blue = Democratic gains | Click a county for details</p>
           </div>
           {loading ? (

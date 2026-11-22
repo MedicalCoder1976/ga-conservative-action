@@ -61,7 +61,7 @@ async function getCountyData(county: string, supabase: any) {
         .from('county_voter_statistics')
         .select('*')
         .eq('county', decodeURIComponent(county))
-        .eq('election_year', 2026)
+        .eq('election_year', 2024)
         .single(),
       supabase
         .from('demographics')
@@ -375,7 +375,7 @@ function CountyDashboardContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400">2026</p>
+                    <p className="text-sm text-slate-400">2024</p>
                     <p className="text-2xl font-bold text-slate-200">
                       {data.population.registered_voters_current?.toLocaleString() || 'N/A'}
                     </p>
@@ -403,7 +403,7 @@ function CountyDashboardContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400">2026 Turnout</p>
+                    <p className="text-sm text-slate-400">2024 Turnout</p>
                     <p className="text-2xl font-bold text-slate-200">
                       {data.population.turnout_rate_current?.toFixed(1)}%
                     </p>
@@ -436,7 +436,7 @@ function CountyDashboardContent() {
                     </p>
                   </div>
                   <div className="pt-3 border-t border-slate-600">
-                    <p className="text-sm text-slate-400">2026 Non-Voters</p>
+                    <p className="text-sm text-slate-400">2024 Non-Voters</p>
                     <p className="text-2xl font-bold text-slate-200">
                       {data.population.non_voters_current?.toLocaleString() || 'N/A'}
                     </p>
@@ -537,7 +537,7 @@ function CountyDashboardContent() {
               {/* Election Results */}
               {election && (
                 <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-red-500">
-                  <h4 className="font-bold text-red-400 mb-4">2026 Election Results</h4>
+                  <h4 className="font-bold text-red-400 mb-4">2024 Presidential Election Results</h4>
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between mb-1">

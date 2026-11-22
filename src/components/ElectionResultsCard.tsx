@@ -7,17 +7,23 @@ interface ElectionResultsCardProps {
 }
 
 export default function ElectionResultsCard({ county, electionData }: ElectionResultsCardProps) {
-  const mockData = {
-    county: county,
-    race: '2026 General Election',
-    republican_votes: 248_500,
-    democrat_votes: 189_300,
-    republican_pct: 56.8,
-    democrat_pct: 43.2,
-    year: 2026,
+  if (!electionData) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Election Results</CardTitle>
+          <CardDescription>Verified county data unavailable</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            No 2024 presidential results are loaded for {county}.
+          </p>
+        </CardContent>
+      </Card>
+    )
   }
 
-  const data = electionData || mockData
+  const data = electionData
   const totalVotes = data.republican_votes + data.democrat_votes
   const votesNeededToFlip = Math.ceil((totalVotes / 2 - data.democrat_votes) + 1)
 

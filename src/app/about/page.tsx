@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, MapPin, Users, TrendingUp, Lock } from 'lucide-react'
 
 export default function AboutPage() {
-  const [year, setYear] = useState<number>(2026)
+  const [year, setYear] = useState<number>(2024)
 
   useEffect(() => {
     setYear(new Date().getFullYear())
@@ -76,7 +76,7 @@ export default function AboutPage() {
             <div className="space-y-4">
               <div className="border-l-4 border-red-500 pl-4 py-2">
                 <h4 className="font-bold text-white mb-1">1. Explore the Map</h4>
-                <p className="text-slate-400">Start by exploring Georgia's counties and viewing historical election data from 2012 to 2026.</p>
+                <p className="text-slate-400">Start by exploring Georgia's counties and viewing verified election data from 2016 to 2024.</p>
               </div>
               <div className="border-l-4 border-red-500 pl-4 py-2">
                 <h4 className="font-bold text-white mb-1">2. Dig Deeper</h4>

@@ -45,7 +45,7 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
   useEffect(() => {
     const fetchDriftData = async () => {
       try {
-        const response = await fetch('/api/voter-drift?year=2026');
+        const response = await fetch('/api/voter-drift?year=2024');
         if (!response.ok) throw new Error('Failed to fetch drift data');
         const data = await response.json();
         setDriftData(data.driftData);
@@ -279,7 +279,7 @@ export default function GeorgiaCountyMapLeaflet({ onCountyClick }: GeorgiaCounty
       />
 
       <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-t-2 border-red-600 px-4 py-3">
-        <h3 className="text-xs font-bold text-slate-900 mb-2">Voter Drift (2026 vs 2016)</h3>
+        <h3 className="text-xs font-bold text-slate-900 mb-2">Voter Drift (2024 vs 2016)</h3>
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-green-400 border border-green-600"></div>

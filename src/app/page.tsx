@@ -71,7 +71,7 @@ export default function HomePage() {
               </h1>
               
               <p className="text-lg sm:text-xl text-slate-700 mb-8 leading-relaxed max-w-xl font-semibold">
-                Georgia is changing. Watch election trends from 2012 to 2026. Understand what drives political shifts in your county. Track local issues and engage with your community.
+                Georgia is changing. Explore verified presidential election trends from 2016 to 2024. Understand what drives political shifts in your county. Track local issues and engage with your community.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -93,8 +93,8 @@ export default function HomePage() {
               <div className="grid grid-cols-3 gap-4 pt-8 border-t-2 border-red-600">
                 {[
                   { label: '159 Counties', value: 'All of Georgia' },
-                  { label: '5 Elections', value: '2012 to 2026' },
-                  { label: 'Real Data', value: 'Live Updates' },
+                  { label: '3 Elections', value: '2016 to 2024' },
+                  { label: 'MIT Data', value: 'Presidential Results' },
                 ].map((stat, i) => (
                   <div key={i}>
                     <div className="text-2xl sm:text-3xl font-black text-red-600">{stat.label}</div>
@@ -132,7 +132,7 @@ export default function HomePage() {
             {
               num: '02',
               title: 'View the Map',
-              desc: 'See how Georgia has changed from 2012 to 2026. Watch the blue rising.',
+              desc: 'See how Georgia has changed from 2016 to 2024.',
               icon: '📊',
             },
             {
@@ -165,14 +165,14 @@ export default function HomePage() {
               Georgia Is Changing
             </h2>
             <p className="text-xl text-slate-700 mb-6 leading-relaxed font-semibold">
-              From 2012 to 2026, Georgia shifted 27 points toward Democratic voting. That's not politics—it's demographics. It's generation change. It's people moving, getting older, or changing their minds.
+              Compare verified county presidential results across 2016, 2020, and 2024 to understand Georgia's political shifts.
             </p>
             <p className="text-lg text-slate-700 mb-6 leading-relaxed font-semibold">
               Understanding these patterns helps you understand what's actually happening in your county.
             </p>
             <ul className="space-y-4">
               {[
-                'See real election data from 2012-2026',
+                'See MIT-verified election data from 2016-2024',
                 'Understand demographic shifts',
                 'Track what matters in your county',
                 'Engage based on facts, not politics',

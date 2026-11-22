@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const selectedYear = request.nextUrl.searchParams.get('year') || '2026';
+    const selectedYear = request.nextUrl.searchParams.get('year') || '2024';
     
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
