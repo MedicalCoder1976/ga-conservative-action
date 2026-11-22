@@ -21,7 +21,6 @@ interface CountyData {
   podcasters: any[]
   drift: any
   electionHistory: any[]
-  turnoutSnapshot: Record<string, string> | null
   electionTrends?: {
     total_votes_2016: number
     total_votes_2020: number
@@ -73,7 +72,6 @@ async function getCountyData(county: string, supabase: any) {
       podcasters: [],
       drift: null,
       electionHistory: [],
-      turnoutSnapshot: null,
     }
   }
 
@@ -82,7 +80,7 @@ async function getCountyData(county: string, supabase: any) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes, turnoutRes] = await Promise.all([
+    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes] = await Promise.all([
       supabase
         .from('counties')
         .select('*')
@@ -146,16 +144,6 @@ async function getCountyData(county: string, supabase: any) {
         console.error('County elections fetch error:', err)
         return { error: err.message, rows: [] }
       }),
-      fetch(`/api/county-turnout?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => {
-        if (!r.ok) {
-          console.error(`County turnout API returned ${r.status}:`, r.statusText)
-          return null
-        }
-        return r.json()
-      }).catch(err => {
-        console.error('County turnout fetch error:', err)
-        return null
-      }),
     ])
 
     // Transform election data to include percentages
@@ -217,7 +205,6 @@ async function getCountyData(county: string, supabase: any) {
       podcasters: mockPodcasters,
       drift: driftData,
       electionHistory: historyRes.rows || [],
-      turnoutSnapshot: turnoutRes,
       electionTrends: driftData ? {
         total_votes_2016: driftData.total_votes_2016,
         total_votes_2020: driftData.total_votes_2020,
@@ -269,7 +256,6 @@ async function getCountyData(county: string, supabase: any) {
       drift: null,
       electionTrends: null,
       electionHistory: [],
-      turnoutSnapshot: null,
     }
   }
 }
@@ -309,7 +295,6 @@ function CountyDashboardContent() {
     podcasters: [],
     drift: null,
     electionHistory: [],
-    turnoutSnapshot: null,
     electionTrends: null,
   })
   const [loading, setLoading] = useState(true)
@@ -448,41 +433,6 @@ function CountyDashboardContent() {
                 </div>
               ))}
 
-              {data.turnoutSnapshot && (
-                <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                    <div>
-                      <p className="font-black text-yellow-300">2026 not yet recorded as voted</p>
-                      <p className="text-xs text-yellow-200/70">Preliminary Georgia Votes early-voting snapshot</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-black text-yellow-200">
-                        {Number(data.turnoutSnapshot.estimated_not_voted).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-yellow-300">
-                        {Number(data.turnoutSnapshot.not_voted_pct).toFixed(1)}% of registered voters
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-5 rounded-full overflow-hidden bg-slate-950 flex border border-yellow-500/30">
-                    <div
-                      className="h-full bg-emerald-500"
-                      style={{ width: `${data.turnoutSnapshot.turnout_pct}%` }}
-                    />
-                    <div
-                      className="h-full bg-yellow-400"
-                      style={{ width: `${data.turnoutSnapshot.not_voted_pct}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-400 mt-2">
-                    <span>{Number(data.turnoutSnapshot.votes_recorded).toLocaleString()} recorded</span>
-                    <span>{Number(data.turnoutSnapshot.registered_voters).toLocaleString()} registered</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-2">
-                    Snapshot {data.turnoutSnapshot.snapshot_at}. This is not certified final turnout or a party result.
-                  </p>
-                </div>
-              )}
             </div>
           ) : (
             <div className="bg-slate-700/50 rounded-lg p-6 text-center text-slate-400">
@@ -585,79 +535,6 @@ function CountyDashboardContent() {
           </div>
         )}
 
-        {data.turnoutSnapshot && (
-          <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-yellow-500/70 rounded-xl p-8 mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
-              <div>
-                <h2 className="text-2xl font-black text-yellow-300">2026 PARTICIPATION SNAPSHOT</h2>
-                <p className="text-sm text-slate-400 mt-1">
-                  {data.turnoutSnapshot.measurement}
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="inline-flex rounded-full bg-yellow-500/15 border border-yellow-500/50 text-yellow-200 px-3 py-1 text-xs font-bold uppercase">
-                  Preliminary
-                </span>
-                <p className="text-xs text-slate-500 mt-2">
-                  Updated {data.turnoutSnapshot.snapshot_at}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="bg-slate-900/40 rounded-lg p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Registered voters</p>
-                <p className="text-2xl font-black text-slate-100 mt-1">
-                  {Number(data.turnoutSnapshot.registered_voters).toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-slate-900/40 rounded-lg p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Votes recorded</p>
-                <p className="text-2xl font-black text-emerald-300 mt-1">
-                  {Number(data.turnoutSnapshot.votes_recorded).toLocaleString()}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {Number(data.turnoutSnapshot.turnout_pct).toFixed(1)}% recorded
-                </p>
-              </div>
-              <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-lg p-4">
-                <p className="text-xs uppercase tracking-wide text-yellow-300">Not yet recorded as voted</p>
-                <p className="text-2xl font-black text-yellow-200 mt-1">
-                  {Number(data.turnoutSnapshot.estimated_not_voted).toLocaleString()}
-                </p>
-                <p className="text-xs text-yellow-400 mt-1">
-                  {Number(data.turnoutSnapshot.not_voted_pct).toFixed(1)}% of registered voters
-                </p>
-              </div>
-            </div>
-
-            <div className="h-5 rounded-full overflow-hidden flex bg-slate-950 border border-slate-600">
-              <div
-                className="bg-emerald-500 h-full"
-                style={{ width: `${data.turnoutSnapshot.turnout_pct}%` }}
-              />
-              <div
-                className="bg-yellow-400 h-full"
-                style={{ width: `${data.turnoutSnapshot.not_voted_pct}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-slate-500 mt-2">
-              <span>Recorded participation</span>
-              <span>Estimated non-voters at snapshot</span>
-            </div>
-            <p className="text-xs text-slate-500 mt-4">
-              This is an early-voting snapshot, not certified 2026 turnout or a party result. Registered voters minus accepted mail/early ballots equals the yellow estimate.{' '}
-              <a
-                className="text-blue-400 hover:text-blue-300"
-                href={data.turnoutSnapshot.source_url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Georgia Votes source
-              </a>
-            </p>
-          </div>
-        )}
 
         {/* Today's Mission */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
