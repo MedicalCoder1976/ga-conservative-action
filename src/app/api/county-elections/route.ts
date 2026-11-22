@@ -66,7 +66,7 @@ async function loadRows() {
     process.cwd(),
     'public',
     'data',
-    'georgia-county-election-results-2016-2024.csv',
+    'georgia-county-election-results-2016-2026.csv',
   )
   const records = parseCsv(await readFile(csvPath, 'utf8'))
   const headers = records.shift()

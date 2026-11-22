@@ -179,7 +179,7 @@ export function VoterDriftMap() {
             Select Election Year for Voter Drift:
           </label>
           <div className="flex flex-wrap gap-2">
-            {[2024, 2020, 2016].map((year) => (
+            {[2026, 2024, 2020, 2016].map((year) => (
               <button
                 key={year}
                 onClick={() => setSelectedYear(year)}
@@ -189,7 +189,7 @@ export function VoterDriftMap() {
                     : 'bg-white text-slate-900 border-2 border-slate-300 hover:border-red-600'
                 }`}
               >
-                {year}{year === 2024 ? ' (Most Recent)' : ''}
+                {year}{year === 2026 ? ' (Most Recent)' : ''}
               </button>
             ))}
           </div>

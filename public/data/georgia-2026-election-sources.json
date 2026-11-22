@@ -1,0 +1,28 @@
+{
+  "source": "Georgia Secretary of State Election Results",
+  "baseUrl": "https://results.sos.ga.gov/results/public/api/elections/Georgia",
+  "jurisdictionId": "09378a07-e6cf-4f66-be7c-ca4aa534f99a",
+  "elections": [
+    {
+      "electionDate": "2026-05-19",
+      "publicElectionId": "GeneralPrimary51926",
+      "name": "May 19, 2026 - General Primary",
+      "xlsx": "2026-05-19-general-primary.xlsx",
+      "countyResultsCsv": "2026-05-19-general-primary-county-results.csv"
+    },
+    {
+      "electionDate": "2026-06-16",
+      "publicElectionId": "06162026GeneralPrimaryRunoff",
+      "name": "June 16th, 2026 General Primary Runoff",
+      "xlsx": "2026-06-16-general-primary-runoff.xlsx",
+      "countyResultsCsv": "2026-06-16-general-primary-runoff-county-results.csv"
+    },
+    {
+      "electionDate": "2026-11-03",
+      "publicElectionId": "11032026GeneralAndSpecialElection",
+      "name": "November 3, 2026 - General & Special Elections",
+      "xlsx": "2026-11-03-general-and-special-election.xlsx",
+      "countyResultsCsv": "2026-11-03-general-and-special-election-county-results.csv"
+    }
+  ]
+}

@@ -26,6 +26,7 @@ interface CountyData {
     total_votes_2016: number
     total_votes_2020: number
     total_votes_2024: number
+    total_votes_2026: number
     votes_growth_pct: number
     dem_baseline_percent: number
     rep_baseline_percent: number
@@ -36,16 +37,26 @@ interface CountyData {
     margin_2016_pct: number
     margin_2020_pct: number
     margin_2024_pct: number
+    margin_2026_pct: number
     margin_change_2016_2020_pct: number
     margin_change_2020_2024_pct: number
     margin_change_2016_2024_pct: number
+    margin_change_2024_2026_pct: number
+    margin_change_2016_2026_pct: number
     dem_change_2016_2020_pct: number
     dem_change_2020_2024_pct: number
     rep_change_2016_2020_pct: number
     rep_change_2020_2024_pct: number
+    dem_change_2024_2026_pct: number
+    dem_change_2016_2026_pct: number
+    rep_change_2024_2026_pct: number
+    rep_change_2016_2026_pct: number
     third_party_2016_pct: number
     third_party_2020_pct: number
     third_party_2024_pct: number
+    dem_2026_percent: number
+    rep_2026_percent: number
+    third_party_2026_pct: number
   } | null
 }
 
@@ -81,8 +92,17 @@ async function getCountyData(county: string, supabase: any) {
         .from('county_voter_statistics')
         .select('*')
         .eq('county', decodeURIComponent(county))
-        .eq('election_year', 2024)
-        .single(),
+        .eq('election_year', 2026)
+        .maybeSingle()
+        .then(async (res: { data: unknown | null }) => {
+          if (res.data) return res
+          return supabase
+            .from('county_voter_statistics')
+            .select('*')
+            .eq('county', decodeURIComponent(county))
+            .eq('election_year', 2024)
+            .maybeSingle()
+        }),
       supabase
         .from('demographics')
         .select('*')
@@ -202,6 +222,7 @@ async function getCountyData(county: string, supabase: any) {
         total_votes_2016: driftData.total_votes_2016,
         total_votes_2020: driftData.total_votes_2020,
         total_votes_2024: driftData.total_votes_2024,
+        total_votes_2026: driftData.total_votes_2026,
         votes_growth_pct: driftData.votes_growth_pct,
         dem_baseline_percent: driftData.dem_baseline_percent,
         rep_baseline_percent: driftData.rep_baseline_percent,
@@ -212,16 +233,26 @@ async function getCountyData(county: string, supabase: any) {
         margin_2016_pct: driftData.margin_2016_pct,
         margin_2020_pct: driftData.margin_2020_pct,
         margin_2024_pct: driftData.margin_2024_pct,
+        margin_2026_pct: driftData.margin_2026_pct,
         margin_change_2016_2020_pct: driftData.margin_change_2016_2020_pct,
         margin_change_2020_2024_pct: driftData.margin_change_2020_2024_pct,
         margin_change_2016_2024_pct: driftData.margin_change_2016_2024_pct,
+        margin_change_2024_2026_pct: driftData.margin_change_2024_2026_pct,
+        margin_change_2016_2026_pct: driftData.margin_change_2016_2026_pct,
         dem_change_2016_2020_pct: driftData.dem_change_2016_2020_pct,
         dem_change_2020_2024_pct: driftData.dem_change_2020_2024_pct,
         rep_change_2016_2020_pct: driftData.rep_change_2016_2020_pct,
         rep_change_2020_2024_pct: driftData.rep_change_2020_2024_pct,
+        dem_change_2024_2026_pct: driftData.dem_change_2024_2026_pct,
+        dem_change_2016_2026_pct: driftData.dem_change_2016_2026_pct,
+        rep_change_2024_2026_pct: driftData.rep_change_2024_2026_pct,
+        rep_change_2016_2026_pct: driftData.rep_change_2016_2026_pct,
         third_party_2016_pct: driftData.third_party_2016_pct,
         third_party_2020_pct: driftData.third_party_2020_pct,
         third_party_2024_pct: driftData.third_party_2024_pct,
+        dem_2026_percent: driftData.dem_2026_percent,
+        rep_2026_percent: driftData.rep_2026_percent,
+        third_party_2026_pct: driftData.third_party_2026_pct,
       } : null,
     }
   } catch (error) {
@@ -368,6 +399,18 @@ function CountyDashboardContent() {
                   rep: data.drift.rep_drift_pct,
                   margin: data.electionTrends.margin_change_2016_2024_pct,
                 },
+                {
+                  label: '2024 → 2026',
+                  dem: data.electionTrends.dem_change_2024_2026_pct,
+                  rep: data.electionTrends.rep_change_2024_2026_pct,
+                  margin: data.electionTrends.margin_change_2024_2026_pct,
+                },
+                {
+                  label: '2016 → 2026',
+                  dem: data.electionTrends.dem_change_2016_2026_pct,
+                  rep: data.electionTrends.rep_change_2016_2026_pct,
+                  margin: data.electionTrends.margin_change_2016_2026_pct,
+                },
               ].map((period) => (
                 <div key={period.label} className="bg-slate-900/45 rounded-lg border border-slate-600 p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -450,11 +493,11 @@ function CountyDashboardContent() {
 
         <CountyElectionHistory county={decodedCounty} rows={data.electionHistory} />
 
-        {/* MIT Presidential Election Trends */}
+        {/* Verified Presidential and 2026 Election Trends */}
         {data.electionTrends && (
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-black text-slate-300 mb-2">📊 MIT PRESIDENTIAL ELECTION TRENDS</h2>
-            <p className="text-sm text-slate-400 mb-6">Verified county returns for 2016, 2020, and 2024</p>
+            <h2 className="text-2xl font-black text-slate-300 mb-2">📊 VERIFIED ELECTION TRENDS</h2>
+            <p className="text-sm text-slate-400 mb-6">Verified county returns for 2016, 2020, 2024, and 2026</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
@@ -475,6 +518,18 @@ function CountyDashboardContent() {
                   dem: data.drift.dem_drift_pct,
                   rep: data.drift.rep_drift_pct,
                   margin: data.electionTrends.margin_change_2016_2024_pct,
+                },
+                {
+                  label: '2024 → 2026',
+                  dem: data.electionTrends.dem_change_2024_2026_pct,
+                  rep: data.electionTrends.rep_change_2024_2026_pct,
+                  margin: data.electionTrends.margin_change_2024_2026_pct,
+                },
+                {
+                  label: '2016 → 2026',
+                  dem: data.electionTrends.dem_change_2016_2026_pct,
+                  rep: data.electionTrends.rep_change_2016_2026_pct,
+                  margin: data.electionTrends.margin_change_2016_2026_pct,
                 },
               ].map((period) => (
                 <div key={period.label} className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
