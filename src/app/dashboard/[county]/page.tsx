@@ -21,6 +21,7 @@ interface CountyData {
   podcasters: any[]
   drift: any
   electionHistory: any[]
+  turnoutSnapshot: Record<string, string> | null
   electionTrends?: {
     total_votes_2016: number
     total_votes_2020: number
@@ -61,6 +62,7 @@ async function getCountyData(county: string, supabase: any) {
       podcasters: [],
       drift: null,
       electionHistory: [],
+      turnoutSnapshot: null,
     }
   }
 
@@ -69,7 +71,7 @@ async function getCountyData(county: string, supabase: any) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes] = await Promise.all([
+    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes, turnoutRes] = await Promise.all([
       supabase
         .from('counties')
         .select('*')
@@ -123,6 +125,16 @@ async function getCountyData(county: string, supabase: any) {
       }).catch(err => {
         console.error('County elections fetch error:', err)
         return { error: err.message, rows: [] }
+      }),
+      fetch(`/api/county-turnout?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => {
+        if (!r.ok) {
+          console.error(`County turnout API returned ${r.status}:`, r.statusText)
+          return null
+        }
+        return r.json()
+      }).catch(err => {
+        console.error('County turnout fetch error:', err)
+        return null
       }),
     ])
 
@@ -185,6 +197,7 @@ async function getCountyData(county: string, supabase: any) {
       podcasters: mockPodcasters,
       drift: driftData,
       electionHistory: historyRes.rows || [],
+      turnoutSnapshot: turnoutRes,
       electionTrends: driftData ? {
         total_votes_2016: driftData.total_votes_2016,
         total_votes_2020: driftData.total_votes_2020,
@@ -225,6 +238,7 @@ async function getCountyData(county: string, supabase: any) {
       drift: null,
       electionTrends: null,
       electionHistory: [],
+      turnoutSnapshot: null,
     }
   }
 }
@@ -264,6 +278,7 @@ function CountyDashboardContent() {
     podcasters: [],
     drift: null,
     electionHistory: [],
+    turnoutSnapshot: null,
     electionTrends: null,
   })
   const [loading, setLoading] = useState(true)
@@ -412,67 +427,6 @@ function CountyDashboardContent() {
             <h2 className="text-2xl font-black text-slate-300 mb-2">📊 MIT PRESIDENTIAL ELECTION TRENDS</h2>
             <p className="text-sm text-slate-400 mb-6">Verified county returns for 2016, 2020, and 2024</p>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-              {[
-                {
-                  year: 2016,
-                  total: data.electionTrends.total_votes_2016,
-                  democrat: data.electionTrends.dem_baseline_percent,
-                  republican: data.electionTrends.rep_baseline_percent,
-                  other: data.electionTrends.third_party_2016_pct,
-                  margin: data.electionTrends.margin_2016_pct,
-                },
-                {
-                  year: 2020,
-                  total: data.electionTrends.total_votes_2020,
-                  democrat: data.electionTrends.dem_2020_percent,
-                  republican: data.electionTrends.rep_2020_percent,
-                  other: data.electionTrends.third_party_2020_pct,
-                  margin: data.electionTrends.margin_2020_pct,
-                },
-                {
-                  year: 2024,
-                  total: data.electionTrends.total_votes_2024,
-                  democrat: data.electionTrends.dem_current_percent,
-                  republican: data.electionTrends.rep_current_percent,
-                  other: data.electionTrends.third_party_2024_pct,
-                  margin: data.electionTrends.margin_2024_pct,
-                },
-              ].map((year) => (
-                <div key={year.year} className="bg-slate-700/50 rounded-lg p-5 border border-slate-600">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-black text-slate-100">{year.year}</h3>
-                    <span className="text-xs text-slate-400">{year.total.toLocaleString()} votes</span>
-                  </div>
-                  <div className="h-4 rounded-full overflow-hidden flex mb-4 bg-slate-600">
-                    <div className="bg-blue-600 h-full" style={{ width: `${year.democrat}%` }} />
-                    <div className="bg-red-600 h-full" style={{ width: `${year.republican}%` }} />
-                    <div className="bg-slate-400 h-full" style={{ width: `${year.other}%` }} />
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-blue-300">Democratic</span>
-                      <strong>{year.democrat.toFixed(1)}%</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-red-300">Republican</span>
-                      <strong>{year.republican.toFixed(1)}%</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Other</span>
-                      <strong>{year.other.toFixed(1)}%</strong>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-slate-600 flex justify-between">
-                    <span className="text-xs text-slate-400">R − D margin</span>
-                    <span className="font-black text-slate-100">
-                      {year.margin > 0 ? '+' : ''}{year.margin.toFixed(1)} pts
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
                 {
@@ -496,26 +450,128 @@ function CountyDashboardContent() {
               ].map((period) => (
                 <div key={period.label} className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
                   <h3 className="font-bold text-yellow-400 mb-4">{period.label} drift</h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-blue-300">Democratic change</span>
-                      <strong>{period.dem > 0 ? '+' : ''}{period.dem.toFixed(1)} pts</strong>
+                  <div className="relative h-40 mb-4">
+                    <div className="absolute inset-x-0 top-1/2 border-t-2 border-slate-400 z-10" />
+                    <div className="absolute inset-x-0 top-0 bottom-1/2 flex items-end">
+                      <div className="w-full">
+                        <div className="flex items-center justify-between text-xs mb-2">
+                          <span className="text-red-300">R</span>
+                          <strong className="text-red-200">
+                            {period.rep > 0 ? '+' : ''}{period.rep.toFixed(1)} pts
+                          </strong>
+                        </div>
+                        <div className="h-8 bg-slate-700/70 rounded-t overflow-hidden">
+                          <div
+                            className="h-full bg-red-600"
+                            style={{ width: `${Math.max(Math.min(Math.abs(period.rep) * 8, 100), 2)}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-red-300">Republican change</span>
-                      <strong>{period.rep > 0 ? '+' : ''}{period.rep.toFixed(1)} pts</strong>
+                    <div className="absolute inset-x-0 top-1/2 bottom-0 flex items-start">
+                      <div className="w-full pt-2">
+                        <div className="h-8 bg-slate-700/70 rounded-b overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600"
+                            style={{ width: `${Math.max(Math.min(Math.abs(period.dem) * 8, 100), 2)}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs mt-2">
+                          <span className="text-blue-300">D</span>
+                          <strong className="text-blue-200">
+                            {period.dem > 0 ? '+' : ''}{period.dem.toFixed(1)} pts
+                          </strong>
+                        </div>
+                      </div>
                     </div>
-                    <div className="pt-3 border-t border-slate-700 flex justify-between">
-                      <span className="text-slate-300">Margin shift</span>
-                      <strong className={period.margin >= 0 ? 'text-red-300' : 'text-blue-300'}>
-                        {period.margin > 0 ? '+' : ''}{period.margin.toFixed(1)} pts
-                        {' '}{period.margin >= 0 ? 'R' : 'D'}
-                      </strong>
-                    </div>
+                  </div>
+                  <div className="pt-3 border-t border-slate-700 flex justify-between text-sm">
+                    <span className="text-slate-300">Net margin shift</span>
+                    <strong className={period.margin >= 0 ? 'text-red-300' : 'text-blue-300'}>
+                      {period.margin > 0 ? '+' : ''}{period.margin.toFixed(1)} pts
+                      {' '}{period.margin >= 0 ? 'R' : 'D'}
+                    </strong>
                   </div>
                 </div>
               ))}
             </div>
+            <p className="text-xs text-slate-500 mt-4">
+              Red Republican change appears above zero; blue Democratic change appears below zero. Bar size represents absolute percentage-point change.
+            </p>
+          </div>
+        )}
+
+        {data.turnoutSnapshot && (
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-yellow-500/70 rounded-xl p-8 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+              <div>
+                <h2 className="text-2xl font-black text-yellow-300">2026 PARTICIPATION SNAPSHOT</h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  {data.turnoutSnapshot.measurement}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="inline-flex rounded-full bg-yellow-500/15 border border-yellow-500/50 text-yellow-200 px-3 py-1 text-xs font-bold uppercase">
+                  Preliminary
+                </span>
+                <p className="text-xs text-slate-500 mt-2">
+                  Updated {data.turnoutSnapshot.snapshot_at}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="bg-slate-900/40 rounded-lg p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-400">Registered voters</p>
+                <p className="text-2xl font-black text-slate-100 mt-1">
+                  {Number(data.turnoutSnapshot.registered_voters).toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-slate-900/40 rounded-lg p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-400">Votes recorded</p>
+                <p className="text-2xl font-black text-emerald-300 mt-1">
+                  {Number(data.turnoutSnapshot.votes_recorded).toLocaleString()}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {Number(data.turnoutSnapshot.turnout_pct).toFixed(1)}% recorded
+                </p>
+              </div>
+              <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-lg p-4">
+                <p className="text-xs uppercase tracking-wide text-yellow-300">Not yet recorded as voted</p>
+                <p className="text-2xl font-black text-yellow-200 mt-1">
+                  {Number(data.turnoutSnapshot.estimated_not_voted).toLocaleString()}
+                </p>
+                <p className="text-xs text-yellow-400 mt-1">
+                  {Number(data.turnoutSnapshot.not_voted_pct).toFixed(1)}% of registered voters
+                </p>
+              </div>
+            </div>
+
+            <div className="h-5 rounded-full overflow-hidden flex bg-slate-950 border border-slate-600">
+              <div
+                className="bg-emerald-500 h-full"
+                style={{ width: `${data.turnoutSnapshot.turnout_pct}%` }}
+              />
+              <div
+                className="bg-yellow-400 h-full"
+                style={{ width: `${data.turnoutSnapshot.not_voted_pct}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-slate-500 mt-2">
+              <span>Recorded participation</span>
+              <span>Estimated non-voters at snapshot</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-4">
+              This is an early-voting snapshot, not certified 2026 turnout or a party result. Registered voters minus accepted mail/early ballots equals the yellow estimate.{' '}
+              <a
+                className="text-blue-400 hover:text-blue-300"
+                href={data.turnoutSnapshot.source_url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Georgia Votes source
+              </a>
+            </p>
           </div>
         )}
 
