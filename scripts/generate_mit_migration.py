@@ -2,11 +2,10 @@ import csv
 from pathlib import Path
 
 
-root = Path(__file__).resolve().parents[2]
-source = root / "georgia_election_data_MIT_VERIFIED_2016_2024.csv"
+root = Path(__file__).resolve().parents[1]
+source = root / "public" / "data" / "georgia-elections-mit-2016-2024.csv"
 output = (
     root
-    / "ga-conservative-action"
     / "supabase"
     / "migrations"
     / "20261122_replace_synthetic_elections_with_mit.sql"

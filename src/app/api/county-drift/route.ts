@@ -60,46 +60,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'County not found' }, { status: 404, headers })
     }
 
-    // Get 2016 voter statistics for population
-    const { data: voters2016 } = await supabase
-      .from('county_voter_statistics')
-      .select('registered_voters, total_votes')
-      .eq('county', decodedCounty)
-      .eq('election_year', 2016)
-      .single()
+    const margin2016 = driftData.rep_baseline_percent - driftData.dem_baseline_percent
+    const margin2024 = driftData.rep_current_percent - driftData.dem_current_percent
 
-    // Get 2024 voter statistics for population
-    const { data: voters2024 } = await supabase
-      .from('county_voter_statistics')
-      .select('registered_voters, total_votes')
-      .eq('county', decodedCounty)
-      .eq('election_year', 2024)
-      .single()
-
-    // Calculate population metrics
-    const reg2016 = voters2016?.registered_voters || 0
-    const reg2024 = voters2024?.registered_voters || 0
-    const total2016 = voters2016?.total_votes || 1
-    const total2024 = voters2024?.total_votes || 1
-
-    const popGrowth = reg2024 - reg2016
-    const popGrowthPct = reg2016 > 0 ? (popGrowth / reg2016) * 100 : 0
-    const nonVoters2016 = reg2016 - total2016
-    const nonVoters2024 = reg2024 - total2024
-    const turnout2016 = (total2016 / (reg2016 || 1)) * 100
-    const turnout2024 = (total2024 / (reg2024 || 1)) * 100
-
-    // Merge data
     return NextResponse.json({
       ...driftData,
-      registered_voters_2016: reg2016,
-      registered_voters_current: reg2024,
-      population_growth_absolute: popGrowth,
-      population_growth_pct: popGrowthPct,
-      non_voters_2016: nonVoters2016,
-      non_voters_current: nonVoters2024,
-      turnout_rate_2016: turnout2016,
-      turnout_rate_current: turnout2024,
+      margin_2016_pct: margin2016,
+      margin_2024_pct: margin2024,
+      margin_change_pct: margin2024 - margin2016,
+      third_party_2016_pct: 100 - driftData.dem_baseline_percent - driftData.rep_baseline_percent,
+      third_party_2024_pct: 100 - driftData.dem_current_percent - driftData.rep_current_percent,
     }, { headers })
   } catch (error) {
     console.error('API error:', error)

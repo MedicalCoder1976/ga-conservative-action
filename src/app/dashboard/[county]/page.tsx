@@ -19,15 +19,19 @@ interface CountyData {
   talkingPoints: any[]
   podcasters: any[]
   drift: any
-  population?: {
-    registered_voters_2016: number
-    registered_voters_current: number
-    population_growth_absolute: number
-    population_growth_pct: number
-    non_voters_2016: number
-    non_voters_current: number
-    turnout_rate_2016: number
-    turnout_rate_current: number
+  electionTrends?: {
+    total_votes_2016: number
+    total_votes_2024: number
+    votes_growth_pct: number
+    dem_baseline_percent: number
+    rep_baseline_percent: number
+    dem_current_percent: number
+    rep_current_percent: number
+    margin_2016_pct: number
+    margin_2024_pct: number
+    margin_change_pct: number
+    third_party_2016_pct: number
+    third_party_2024_pct: number
   } | null
 }
 
@@ -156,15 +160,19 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: pointsRes.data || [],
       podcasters: mockPodcasters,
       drift: driftData,
-      population: driftData ? {
-        registered_voters_2016: driftData.registered_voters_2016,
-        registered_voters_current: driftData.registered_voters_current,
-        population_growth_absolute: driftData.population_growth_absolute,
-        population_growth_pct: driftData.population_growth_pct,
-        non_voters_2016: driftData.non_voters_2016,
-        non_voters_current: driftData.non_voters_current,
-        turnout_rate_2016: driftData.turnout_rate_2016,
-        turnout_rate_current: driftData.turnout_rate_current,
+      electionTrends: driftData ? {
+        total_votes_2016: driftData.total_votes_2016,
+        total_votes_2024: driftData.total_votes_2024,
+        votes_growth_pct: driftData.votes_growth_pct,
+        dem_baseline_percent: driftData.dem_baseline_percent,
+        rep_baseline_percent: driftData.rep_baseline_percent,
+        dem_current_percent: driftData.dem_current_percent,
+        rep_current_percent: driftData.rep_current_percent,
+        margin_2016_pct: driftData.margin_2016_pct,
+        margin_2024_pct: driftData.margin_2024_pct,
+        margin_change_pct: driftData.margin_change_pct,
+        third_party_2016_pct: driftData.third_party_2016_pct,
+        third_party_2024_pct: driftData.third_party_2024_pct,
       } : null,
     }
   } catch (error) {
@@ -179,7 +187,7 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: [],
       podcasters: [],
       drift: null,
-      population: null,
+      electionTrends: null,
     }
   }
 }
@@ -218,7 +226,7 @@ function CountyDashboardContent() {
     talkingPoints: [],
     podcasters: [],
     drift: null,
-    population: null,
+    electionTrends: null,
   })
   const [loading, setLoading] = useState(true)
   const [showIntel, setShowIntel] = useState(false)
@@ -358,116 +366,95 @@ function CountyDashboardContent() {
           )}
         </div>
 
-        {/* Population & Turnout Dynamics */}
-        {data.population && (
+        {/* MIT Presidential Election Trends */}
+        {data.electionTrends && (
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-black text-slate-300 mb-6">📊 POPULATION & TURNOUT DYNAMICS</h2>
+            <h2 className="text-2xl font-black text-slate-300 mb-2">📊 MIT PRESIDENTIAL ELECTION TRENDS</h2>
+            <p className="text-sm text-slate-400 mb-6">Verified county returns for 2016, 2020, and 2024</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Registered Voters */}
+              {/* Ballots Cast */}
               <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-blue-500">
-                <h3 className="font-bold text-blue-400 mb-4">Registered Voters</h3>
+                <h3 className="font-bold text-blue-400 mb-4">Ballots Cast</h3>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-slate-400">2016</p>
+                    <p className="text-sm text-slate-400">2016 Total</p>
                     <p className="text-2xl font-bold text-slate-200">
-                      {data.population.registered_voters_2016?.toLocaleString() || 'N/A'}
+                      {data.electionTrends.total_votes_2016.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400">2024</p>
+                    <p className="text-sm text-slate-400">2024 Total</p>
                     <p className="text-2xl font-bold text-slate-200">
-                      {data.population.registered_voters_current?.toLocaleString() || 'N/A'}
+                      {data.electionTrends.total_votes_2024.toLocaleString()}
                     </p>
                   </div>
                   <div className={`pt-3 border-t border-slate-600 flex items-center justify-between`}>
                     <span className="text-sm text-slate-400">Change:</span>
                     <span className={`text-lg font-bold ${
-                      data.population.population_growth_pct > 0 ? 'text-green-400' : 'text-red-400'
+                      data.electionTrends.votes_growth_pct > 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {data.population.population_growth_pct > 0 ? '+' : ''}
-                      {data.population.population_growth_pct?.toFixed(1)}%
+                      {data.electionTrends.votes_growth_pct > 0 ? '+' : ''}
+                      {data.electionTrends.votes_growth_pct.toFixed(1)}%
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Turnout Rates */}
+              {/* 2024 Vote Share */}
               <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-purple-500">
-                <h3 className="font-bold text-purple-400 mb-4">Turnout Rates</h3>
+                <h3 className="font-bold text-purple-400 mb-4">2024 Vote Share</h3>
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-slate-400">2016 Turnout</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.population.turnout_rate_2016?.toFixed(1)}%
-                    </p>
+                  <div className="flex justify-between">
+                    <span className="text-blue-400">Democratic</span>
+                    <span className="font-bold text-slate-200">{data.electionTrends.dem_current_percent.toFixed(1)}%</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-400">2024 Turnout</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.population.turnout_rate_current?.toFixed(1)}%
-                    </p>
+                  <div className="flex justify-between">
+                    <span className="text-red-400">Republican</span>
+                    <span className="font-bold text-slate-200">{data.electionTrends.rep_current_percent.toFixed(1)}%</span>
                   </div>
-                  <div className={`pt-3 border-t border-slate-600`}>
-                    <span className="text-sm text-slate-400">Change: </span>
-                    <span className={`font-bold ${
-                      (data.population.turnout_rate_current - data.population.turnout_rate_2016) > 0 
-                        ? 'text-green-400' 
-                        : 'text-red-400'
-                    }`}>
-                      {(data.population.turnout_rate_current - data.population.turnout_rate_2016) > 0 ? '+' : ''}
-                      {(data.population.turnout_rate_current - data.population.turnout_rate_2016)?.toFixed(1)}%
-                    </span>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Other / write-in</span>
+                    <span className="font-bold text-slate-200">{data.electionTrends.third_party_2024_pct.toFixed(1)}%</span>
                   </div>
                 </div>
               </div>
 
-              {/* Non-Voters */}
+              {/* Partisan Margin */}
               <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-orange-500">
-                <h3 className="font-bold text-orange-400 mb-4">Non-Voters</h3>
+                <h3 className="font-bold text-orange-400 mb-4">Partisan Margin</h3>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-slate-400">2016 Non-Voters</p>
+                    <p className="text-sm text-slate-400">2016 Republican minus Democratic</p>
                     <p className="text-2xl font-bold text-slate-200">
-                      {data.population.non_voters_2016?.toLocaleString() || 'N/A'}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      ({((data.population.non_voters_2016 / (data.population.registered_voters_2016 || 1)) * 100).toFixed(1)}% of voters)
+                      {data.electionTrends.margin_2016_pct > 0 ? '+' : ''}
+                      {data.electionTrends.margin_2016_pct.toFixed(1)} pts
                     </p>
                   </div>
                   <div className="pt-3 border-t border-slate-600">
-                    <p className="text-sm text-slate-400">2024 Non-Voters</p>
+                    <p className="text-sm text-slate-400">2024 Republican minus Democratic</p>
                     <p className="text-2xl font-bold text-slate-200">
-                      {data.population.non_voters_current?.toLocaleString() || 'N/A'}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      ({((data.population.non_voters_current / (data.population.registered_voters_current || 1)) * 100).toFixed(1)}% of voters)
+                      {data.electionTrends.margin_2024_pct > 0 ? '+' : ''}
+                      {data.electionTrends.margin_2024_pct.toFixed(1)} pts
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Population Growth */}
+              {/* Margin Shift */}
               <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-yellow-500">
-                <h3 className="font-bold text-yellow-400 mb-4">Population Change</h3>
+                <h3 className="font-bold text-yellow-400 mb-4">Margin Shift Since 2016</h3>
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-slate-400">Absolute Change</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.population.population_growth_absolute > 0 ? '+' : ''}
-                      {data.population.population_growth_absolute?.toLocaleString() || 'N/A'}
-                    </p>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-2 p-3 bg-slate-900/50 rounded border border-slate-600">
-                    {data.population.population_growth_pct < -50 
-                      ? '⚠️ Significant decline - verify data'
-                      : data.population.population_growth_pct > 20
-                      ? '📈 Strong growth'
-                      : data.population.population_growth_pct > 0
-                      ? '📊 Modest growth'
-                      : '📉 Declining'
-                    }
-                  </div>
+                  <p className="text-2xl font-bold text-slate-200">
+                    {data.electionTrends.margin_change_pct > 0 ? '+' : ''}
+                    {data.electionTrends.margin_change_pct.toFixed(1)} pts
+                  </p>
+                  <p className="text-sm text-slate-400">
+                    {data.electionTrends.margin_change_pct >= 0 ? 'Toward Republican' : 'Toward Democratic'} vote share
+                  </p>
+                  <p className="text-xs text-slate-500 pt-3 border-t border-slate-600">
+                    Other-party share changed from {data.electionTrends.third_party_2016_pct.toFixed(1)}% in 2016 to {data.electionTrends.third_party_2024_pct.toFixed(1)}% in 2024.
+                  </p>
                 </div>
               </div>
             </div>
@@ -542,31 +529,31 @@ function CountyDashboardContent() {
                     <div>
                       <div className="flex justify-between mb-1">
                         <span>Republican</span>
-                        <span className="font-bold text-red-400">{election.republican_pct || 56}%</span>
+                        <span className="font-bold text-red-400">{election.republican_pct.toFixed(1)}%</span>
                       </div>
                       <div className="w-full bg-slate-600 rounded-full h-3 overflow-hidden">
                         <div
                           className="h-full bg-red-600"
-                          style={{ width: `${election.republican_pct || 56}%` }}
+                          style={{ width: `${election.republican_pct}%` }}
                         ></div>
                       </div>
                       <p className="text-xs text-slate-400 mt-1">
-                        {election.republican_votes || 248500} votes
+                        {election.republican_votes.toLocaleString()} votes
                       </p>
                     </div>
                     <div>
                       <div className="flex justify-between mb-1">
                         <span>Democrat</span>
-                        <span className="font-bold text-blue-400">{election.democrat_pct || 43}%</span>
+                        <span className="font-bold text-blue-400">{election.democrat_pct.toFixed(1)}%</span>
                       </div>
                       <div className="w-full bg-slate-600 rounded-full h-3 overflow-hidden">
                         <div
                           className="h-full bg-blue-600"
-                          style={{ width: `${election.democrat_pct || 43}%` }}
+                          style={{ width: `${election.democrat_pct}%` }}
                         ></div>
                       </div>
                       <p className="text-xs text-slate-400 mt-1">
-                        {election.democrat_votes || 189300} votes
+                        {election.democrat_votes.toLocaleString()} votes
                       </p>
                     </div>
                   </div>
