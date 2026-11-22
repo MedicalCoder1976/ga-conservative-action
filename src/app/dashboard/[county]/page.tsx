@@ -339,78 +339,107 @@ function CountyDashboardContent() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Voter Drift Progress */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
-          <h2 className="text-2xl font-black text-slate-300 mb-4">📊 PROGRESS</h2>
-          
-          {data.drift ? (
-            <div className="space-y-4">
-              {/* Drift Direction & Tilt */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-lg">Voter Drift: 2016 → 2024</span>
-                  <span className={`text-2xl font-black ${
-                    data.drift.direction === 'blue' ? 'text-blue-400' :
-                    data.drift.direction === 'red' ? 'text-red-400' :
-                    'text-slate-400'
-                  }`}>
-                    {data.drift.direction === 'blue' ? '← BLUE SHIFT' :
-                     data.drift.direction === 'red' ? 'RED SHIFT →' :
-                     '◆ NEUTRAL'}
-                  </span>
-                </div>
-              </div>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-100">📊 ELECTION DRIFT</h2>
+              <p className="text-sm text-slate-400">Change in presidential vote share—not total votes</p>
+            </div>
+            <p className="text-xs text-slate-500">Percentage-point change</p>
+          </div>
 
-              {/* Progress Bar - Red/Blue Only */}
-              <div className="mb-6">
-                <div className="flex justify-between mb-2 text-sm font-semibold">
-                  <span className="text-blue-400">Democratic: {data.drift.dem_current_percent?.toFixed(1)}%</span>
-                  <span className="text-red-400">Republican: {data.drift.rep_current_percent?.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-slate-700 rounded-lg h-10 overflow-hidden border-2 border-slate-600 flex">
-                  {/* Blue bar */}
-                  <div
-                    className="bg-blue-600 transition-all duration-500 flex items-center justify-center text-white font-bold text-xs"
-                    style={{ width: `${data.drift.dem_current_percent || 50}%` }}
-                  >
-                    {data.drift.dem_current_percent > 20 && `${data.drift.dem_current_percent?.toFixed(0)}%`}
+          {data.electionTrends ? (
+            <div className="space-y-6">
+              {[
+                {
+                  label: '2016 → 2020',
+                  dem: data.electionTrends.dem_change_2016_2020_pct,
+                  rep: data.electionTrends.rep_change_2016_2020_pct,
+                  margin: data.electionTrends.margin_change_2016_2020_pct,
+                },
+                {
+                  label: '2020 → 2024',
+                  dem: data.electionTrends.dem_change_2020_2024_pct,
+                  rep: data.electionTrends.rep_change_2020_2024_pct,
+                  margin: data.electionTrends.margin_change_2020_2024_pct,
+                },
+                {
+                  label: '2016 → 2024',
+                  dem: data.drift.dem_drift_pct,
+                  rep: data.drift.rep_drift_pct,
+                  margin: data.electionTrends.margin_change_2016_2024_pct,
+                },
+              ].map((period) => (
+                <div key={period.label} className="bg-slate-900/45 rounded-lg border border-slate-600 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-black text-slate-100">{period.label}</h3>
+                    <span className={period.margin >= 0 ? 'text-red-300' : 'text-blue-300'}>
+                      {period.margin > 0 ? '+' : ''}{period.margin.toFixed(1)} pts {period.margin >= 0 ? 'R' : 'D'} margin
+                    </span>
                   </div>
-                  {/* Red bar */}
-                  <div
-                    className="bg-red-600 transition-all duration-500 flex items-center justify-center text-white font-bold text-xs"
-                    style={{ width: `${data.drift.rep_current_percent || 50}%` }}
-                  >
-                    {data.drift.rep_current_percent > 20 && `${data.drift.rep_current_percent?.toFixed(0)}%`}
+                  <div className="grid grid-cols-[34px_1fr_74px] items-center gap-2">
+                    <span className="text-right font-black text-red-300">R</span>
+                    <div className="h-6 rounded-t bg-slate-950 overflow-hidden flex items-center">
+                      <div
+                        className="h-full bg-red-600"
+                        style={{ width: `${Math.max(Math.min(Math.abs(period.rep) * 10, 100), 2)}%` }}
+                      />
+                    </div>
+                    <strong className="text-right text-red-200">
+                      {period.rep > 0 ? '+' : ''}{period.rep.toFixed(1)}
+                    </strong>
+                    <span className="text-right font-black text-blue-300">D</span>
+                    <div className="h-6 rounded-b bg-slate-950 overflow-hidden flex items-center">
+                      <div
+                        className="h-full bg-blue-600"
+                        style={{ width: `${Math.max(Math.min(Math.abs(period.dem) * 10, 100), 2)}%` }}
+                      />
+                    </div>
+                    <strong className="text-right text-blue-200">
+                      {period.dem > 0 ? '+' : ''}{period.dem.toFixed(1)}
+                    </strong>
                   </div>
-                </div>
-              </div>
-
-              {/* Drift Details */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-blue-900/30 rounded-lg p-3 border-l-4 border-blue-500">
-                  <p className="text-blue-400 font-semibold text-xs mb-1">Democratic Shift</p>
-                  <p className="text-lg font-bold text-blue-300">
-                    {data.drift.dem_drift_pct > 0 ? '+' : ''}{data.drift.dem_drift_pct?.toFixed(1)}%
+                  <div className="h-px bg-slate-400 mt-2" />
+                  <p className="text-[11px] text-slate-500 mt-2">
+                    Positive values are gains in that party&apos;s vote share; negative values are losses.
                   </p>
                 </div>
-                <div className="bg-red-900/30 rounded-lg p-3 border-l-4 border-red-500">
-                  <p className="text-red-400 font-semibold text-xs mb-1">Republican Shift</p>
-                  <p className="text-lg font-bold text-red-300">
-                    {data.drift.rep_drift_pct > 0 ? '+' : ''}{data.drift.rep_drift_pct?.toFixed(1)}%
+              ))}
+
+              {data.turnoutSnapshot && (
+                <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                    <div>
+                      <p className="font-black text-yellow-300">2026 not yet recorded as voted</p>
+                      <p className="text-xs text-yellow-200/70">Preliminary Georgia Votes early-voting snapshot</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-black text-yellow-200">
+                        {Number(data.turnoutSnapshot.estimated_not_voted).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-yellow-300">
+                        {Number(data.turnoutSnapshot.not_voted_pct).toFixed(1)}% of registered voters
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-5 rounded-full overflow-hidden bg-slate-950 flex border border-yellow-500/30">
+                    <div
+                      className="h-full bg-emerald-500"
+                      style={{ width: `${data.turnoutSnapshot.turnout_pct}%` }}
+                    />
+                    <div
+                      className="h-full bg-yellow-400"
+                      style={{ width: `${data.turnoutSnapshot.not_voted_pct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[11px] text-slate-400 mt-2">
+                    <span>{Number(data.turnoutSnapshot.votes_recorded).toLocaleString()} recorded</span>
+                    <span>{Number(data.turnoutSnapshot.registered_voters).toLocaleString()} registered</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-2">
+                    Snapshot {data.turnoutSnapshot.snapshot_at}. This is not certified final turnout or a party result.
                   </p>
                 </div>
-              </div>
-
-              {/* Interpretation */}
-              <div className="bg-slate-900/50 rounded-lg p-4 text-sm text-slate-300 border border-slate-600">
-                <p className="font-semibold mb-2">What This Means:</p>
-                <p>
-                  {data.drift.dem_drift_pct > 0 
-                    ? `This county has shifted BLUE by ${Math.abs(data.drift.dem_drift_pct).toFixed(1)}% since 2016.`
-                    : data.drift.rep_drift_pct > 0
-                    ? `This county has shifted RED by ${Math.abs(data.drift.rep_drift_pct).toFixed(1)}% since 2016.`
-                    : 'This county has remained relatively stable since 2016.'}
-                  {' '} Current results show {data.drift.direction === 'blue' ? 'Democratic' : data.drift.direction === 'red' ? 'Republican' : 'mixed'} strength.
-                </p>
-              </div>
+              )}
             </div>
           ) : (
             <div className="bg-slate-700/50 rounded-lg p-6 text-center text-slate-400">
