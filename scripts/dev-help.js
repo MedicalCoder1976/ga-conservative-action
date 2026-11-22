@@ -3,7 +3,6 @@
  * GA Conservative Action - Development Helper
  * 
  * Usage:
- *   node scripts/dev-help.js seed          - Run database seeding
  *   node scripts/dev-help.js build         - Build for production
  *   node scripts/dev-help.js verify-env    - Check environment setup
  */
@@ -13,24 +12,6 @@ const path = require('path')
 const { spawn } = require('child_process')
 
 const commands = {
-  seed: {
-    description: 'Seed the database with reference data',
-    run: async () => {
-      console.log('🌱 Seeding database...')
-      console.log('Make sure:')
-      console.log('  1. .env.local has real Supabase credentials')
-      console.log('  2. Database schema has been created in Supabase SQL Editor')
-      console.log('  3. Dev server is running (npm run dev)')
-      console.log('')
-      console.log('Then run:')
-      console.log('  curl -X POST http://localhost:3000/api/seed \\')
-      console.log('    -H "Authorization: Bearer dev-seed-key-change-in-production" \\')
-      console.log('    -H "Content-Type: application/json"')
-      console.log('')
-      console.log('Check browser console and Network tab for response.')
-    }
-  },
-
   build: {
     description: 'Build for production',
     run: async () => {

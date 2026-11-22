@@ -7,46 +7,7 @@ interface ExitPollsCardProps {
 }
 
 export default function ExitPollsCard({ county, pollsData }: ExitPollsCardProps) {
-  const mockPolls: ExitPoll[] = [
-    {
-      id: '1',
-      source: '2024 Exit Poll',
-      question: 'How important is the economy to your vote?',
-      response: 'Very Important',
-      percent: 78,
-      party_split: '82% R, 74% D',
-      county: county,
-    },
-    {
-      id: '2',
-      source: '2024 Exit Poll',
-      question: 'How important is inflation?',
-      response: 'Very Concerned',
-      percent: 71,
-      party_split: '89% R, 52% D',
-      county: county,
-    },
-    {
-      id: '3',
-      source: '2024 Exit Poll',
-      question: 'Should the border be more secure?',
-      response: 'Yes',
-      percent: 64,
-      party_split: '94% R, 31% D',
-      county: county,
-    },
-    {
-      id: '4',
-      source: '2024 Exit Poll',
-      question: 'How do you rate the direction of the country?',
-      response: 'Wrong Track',
-      percent: 58,
-      party_split: '92% R, 21% D',
-      county: county,
-    },
-  ]
-
-  const polls = (pollsData && pollsData.length > 0) ? pollsData : mockPolls
+  const polls = pollsData ?? []
 
   return (
     <Card>

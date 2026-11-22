@@ -7,21 +7,23 @@ interface DemographicsCardProps {
 }
 
 export default function DemographicsCard({ county, demographicsData }: DemographicsCardProps) {
-  const mockData = {
-    county: county,
-    age_18_29: 22.5,
-    age_30_44: 26.8,
-    age_45_64: 31.2,
-    age_65_plus: 19.5,
-    white: 68.2,
-    black: 15.4,
-    hispanic: 10.8,
-    asian_other: 5.6,
-    notes: 'Data from US Census Bureau',
-    refreshed_at: new Date().toISOString().split('T')[0],
+  if (!demographicsData) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Demographics</CardTitle>
+          <CardDescription>Verified county data unavailable</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            No verified demographic data is loaded for {county}.
+          </p>
+        </CardContent>
+      </Card>
+    )
   }
 
-  const data = demographicsData || mockData
+  const data = demographicsData
 
   const ageGroups = [
     { label: '18-29', value: data.age_18_29 },

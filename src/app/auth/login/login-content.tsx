@@ -217,7 +217,7 @@ export default function LoginPageContent() {
                     <Input
                       id="username"
                       type="text"
-                      placeholder="demouser or demo@gaissues.local"
+                      placeholder="Email address"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       disabled={loading}

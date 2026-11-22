@@ -6,49 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-
-const GEORGIA_COUNTIES = [
-  'Appling', 'Atkinson', 'Bacon', 'Baker', 'Baldwin', 'Banks', 'Barrow', 'Bartow',
-  'Ben Hill', 'Berrien', 'Bibb', 'Bleckley', 'Brantley', 'Bremen', 'Brooks', 'Bryan',
-  'Bulloch', 'Burke', 'Butts', 'Calhoun', 'Camden', 'Campbell', 'Candler', 'Carroll',
-  'Catoosa', 'Charlton', 'Chatham', 'Chattahoochee', 'Chattooga', 'Cherokee', 'Cherry',
-  'Clarke', 'Clay', 'Clayton', 'Clinch', 'Cobb', 'Coffee', 'Colquitt', 'Columbia',
-  'Cook', 'Coweta', 'Crawford', 'Crisp', 'Dade', 'Dalton', 'Dawson', 'DeKalb',
-  'Decatur', 'Dodge', 'Dooly', 'Dougherty', 'Douglas', 'Dover', 'Dune', 'Dunklin',
-  'Echols', 'Effingham', 'Elbert', 'Ellijay', 'Emanuel', 'Emmet', 'Evans', 'Fannin',
-  'Fayette', 'Fayetteville', 'Floyd', 'Forsyth', 'Fort Gaines', 'Franklin', 'Fulton',
-  'Gainesville', 'Gamer', 'Garfield', 'Garner', 'Glascock', 'Glynn', 'Gordon', 'Grady',
-  'Grafton', 'Graham', 'Grant', 'Grayson', 'Green', 'Greene', 'Greensboro', 'Greenville',
-  'Grenville', 'Grifton', 'Grimes', 'Grundy', 'Guilford', 'Guthrie', 'Gwinnett', 'Hahira',
-  'Hale', 'Hancock', 'Hannibal', 'Hapeville', 'Hardin', 'Hardy', 'Harlem', 'Harris',
-  'Harrison', 'Hart', 'Hartselle', 'Harveyville', 'Harwich', 'Hatfield', 'Hawkinsville',
-  'Hazelhurst', 'Henderson', 'Hendrix', 'Henley', 'Henry', 'Herbert', 'Hernando', 'Herrick',
-  'Hester', 'Hiawassee', 'Hickman', 'Hillsborough', 'Hilton', 'Himrod', 'Hines', 'Hinton',
-  'Hiriam', 'Hobart', 'Hoboken', 'Hochatown', 'Hodgson', 'Hogansville', 'Hogan', 'Hohner',
-  'Holiday', 'Holladay', 'Holland', 'Holley', 'Hollins', 'Hollister', 'Holloway', 'Holman',
-  'Holmes', 'Holroyd', 'Holsey', 'Holtsville', 'Holy', 'Holyoke', 'Homer', 'Homestead',
-  'Homewood', 'Hommels', 'Hommock', 'Hone', 'Honey Grove', 'Honeywood', 'Hong', 'Honaker',
-  'Hood', 'Hood River', 'Hoodo', 'Hoodooed', 'Hoodyards', 'Hoof', 'Hoofbeats', 'Hoogle',
-  'Hook', 'Hookdale', 'Hooker', 'Hooks', 'Hooper', 'Hoopeston', 'Hoorahville', 'Hoorn',
-  'Hoosick', 'Hoosier', 'Hoot', 'Hooterville', 'Hooverville', 'Hope', 'Hopeful', 'Hopefully',
-  'Hopeless', 'Hopeville', 'Hopkinsville', 'Hopkinton', 'Hopperstad', 'Hoppers', 'Hoppers Corners',
-  'Hoppertown', 'Hoppy', 'Hopscotch', 'Hopson', 'Hoptop', 'Hoptonville', 'Hopvalley', 'Hopville',
-  'Hopwood', 'Hora', 'Horace', 'Horaceville', 'Horatio', 'Horatiusville', 'Horb', 'Horbourg',
-  'Horce', 'Horchata', 'Hord', 'Horde', 'Hordeolum', 'Horder', 'Horders', 'Hordeskoe',
-  'Hordham', 'Hordick', 'Hordin', 'Hordion', 'Hordley', 'Hordskin', 'Hordsly', 'Hordsley',
-  'Hordville', 'Hordwell', 'Hordwhale', 'Hordwick', 'Hordying', 'Hordy', 'Hore', 'Horeford',
-  'Horehound', 'Horehrep', 'Horeland', 'Horemule', 'Horename', 'Horepen', 'Horeplant', 'Horsary',
-  'Horsata', 'Horsate', 'Horsated', 'Horsatel', 'Horsater', 'Horsatie', 'Horsatin', 'Horsatio',
-  'Horsation', 'Horsatis', 'Horsatium', 'Horsatly', 'Horsatman', 'Horsatmind', 'Horsatry', 'Horsatship',
-  'Horsatson', 'Horsatton', 'Horsature', 'Horsaturn', 'Horsaturn', 'Horsatville', 'Horsatward', 'Horsatway',
-  'Horsatwell', 'Horsatwise', 'Horsatwold', 'Horsatwork', 'Horsatown', 'Horsatowne', 'Horsatows', 'Horsatoy',
-  'Houston', 'Irwin', 'Jackson', 'Jasper', 'Jeff Davis', 'Jefferson', 'Jenkins', 'Johnson',
-  'Jones', 'Josephine', 'Juniper', 'Keg', 'Kendall', 'Kenerly', 'Kenmore', 'Keno',
-  'Kenning', 'Kenosis', 'Kenosha', 'Kenotaph', 'Kenotary', 'Kenough', 'Kensell', 'Kenshall',
-  'Kensho', 'Kenshui', 'Kensill', 'Kensington', 'Kensley', 'Kensly', 'Kensol', 'Kensole',
-  'Kenson', 'Kensore', 'Kensory', 'Kensoul', 'Kensour', 'Kensouth', 'Kensoy', 'Kensoyage',
-  'Kensoyant', 'Kensoyate', 'Kensoyble', 'Kensoydle', 'Kensoydle', 'Kensoyel', 'Kensoyelt', 'Kensoyence'
-]
+import { GEORGIA_COUNTIES } from '@/lib/constants/georgia-counties'
 
 export default function OnboardingPage() {
   const router = useRouter()

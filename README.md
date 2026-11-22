@@ -35,13 +35,6 @@ A production-ready Next.js application for tracking voter engagement across Geor
    
    Open http://localhost:3000
 
-4. **Seed the database:**
-   ```bash
-   curl -X POST http://localhost:3000/api/seed \
-     -H "Authorization: Bearer dev-seed-key-change-in-production" \
-     -H "Content-Type: application/json"
-   ```
-
 5. **Test the application:**
    See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for complete testing checklist
 
@@ -50,7 +43,7 @@ A production-ready Next.js application for tracking voter engagement across Geor
 ### Core
 - ✓ Multi-provider authentication (Google, Apple, Facebook, Email)
 - ✓ Interactive Georgia county map with activity tracking
-- ✓ Verified county election results for 2016, 2018, 2020, 2022, and 2024
+- ✓ Verified county election results for 2016, 2018, 2020, 2022, 2024, and 2026
 - ✓ Exit poll analysis by county
 - ✓ Activity logging with photo uploads and points system
 - ✓ Real-time color intensity based on volunteer activity
@@ -163,29 +156,6 @@ python scripts/import_county_election_sources.py
 Sources are the official MIT Election Data + Science Lab precinct return archives for
 2016, 2018, 2020, 2022, and 2024. The generator validates that statewide contests cover
 all 159 counties and rejects negative or missing-vote records.
-
-## 2026 Turnout Snapshots
-
-Georgia Votes 2026 county participation is imported independently from election results:
-
-```bash
-python scripts/import_georgia_votes_turnout.py
-```
-
-This writes `public/data/georgia-turnout-snapshots.csv` with a timestamped, preliminary
-159-county snapshot. The importer requires the published Georgia Votes county-table schema,
-valid county FIPS mappings, non-negative values, and `votes <= registered voters`.
-
-The yellow county estimate is:
-
-```text
-registered voters - accepted mail/early ballots
-```
-
-It is labeled as people not yet recorded as having voted at the snapshot date. It is not
-treated as certified final turnout, and it is never combined with party vote share. Certified
-2026 candidate results require a separate source and verification stage before they can be
-added.
 
 ## 🔐 Security
 

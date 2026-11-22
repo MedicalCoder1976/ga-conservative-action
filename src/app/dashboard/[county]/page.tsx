@@ -18,7 +18,6 @@ interface CountyData {
   user: any
   leaders: any[]
   talkingPoints: any[]
-  podcasters: any[]
   drift: any
   electionHistory: any[]
   electionTrends?: {
@@ -69,7 +68,6 @@ async function getCountyData(county: string, supabase: any) {
       user: null,
       leaders: [],
       talkingPoints: [],
-      podcasters: [],
       drift: null,
       electionHistory: [],
     }
@@ -166,34 +164,6 @@ async function getCountyData(county: string, supabase: any) {
       console.log('Drift API error:', driftRes.error)
     }
 
-    // Mock podcasters data for now (can be replaced with actual DB table later)
-    const mockPodcasters = [
-      {
-        id: 1,
-        name: 'Georgia Politics Today',
-        host: 'John Mitchell',
-        platform: 'Apple Podcasts',
-        url: 'https://podcasts.apple.com',
-        description: 'Daily updates on Georgia politics and activism',
-      },
-      {
-        id: 2,
-        name: 'Peach State Voices',
-        host: 'Sarah Chen',
-        platform: 'Spotify',
-        url: 'https://open.spotify.com',
-        description: 'Conservative perspectives on state issues',
-      },
-      {
-        id: 3,
-        name: 'Get Out The Vote GA',
-        host: 'Michael Rodriguez',
-        platform: 'YouTube',
-        url: 'https://www.youtube.com',
-        description: 'Grassroots organizing and outreach tips',
-      },
-    ]
-
     return {
       county: countyRes.data || null,
       election: formattedElection,
@@ -202,7 +172,6 @@ async function getCountyData(county: string, supabase: any) {
       user: user || null,
       leaders: leadersRes.data || [],
       talkingPoints: pointsRes.data || [],
-      podcasters: mockPodcasters,
       drift: driftData,
       electionHistory: historyRes.rows || [],
       electionTrends: driftData ? {
@@ -252,7 +221,6 @@ async function getCountyData(county: string, supabase: any) {
       user: null,
       leaders: [],
       talkingPoints: [],
-      podcasters: [],
       drift: null,
       electionTrends: null,
       electionHistory: [],
@@ -292,7 +260,6 @@ function CountyDashboardContent() {
     user: null,
     leaders: [],
     talkingPoints: [],
-    podcasters: [],
     drift: null,
     electionHistory: [],
     electionTrends: null,
@@ -819,36 +786,6 @@ function CountyDashboardContent() {
                 </div>
               )}
 
-              {/* Georgia Podcasters & Media Resources */}
-              {data.podcasters.length > 0 && (
-                <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-pink-500">
-                  <h4 className="font-bold text-pink-400 mb-4">🎙️ Georgia Podcasters & Media</h4>
-                  <div className="space-y-4">
-                    {data.podcasters.map((podcast: any, idx: number) => (
-                      <div key={idx} className="bg-slate-600/30 rounded p-4 border-l-2 border-pink-400">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <p className="font-bold text-white">{podcast.name}</p>
-                            <p className="text-sm text-pink-300">Hosted by {podcast.host}</p>
-                            <p className="text-xs text-slate-300 mt-1">{podcast.description}</p>
-                          </div>
-                          <span className="text-xs bg-pink-900/50 px-2 py-1 rounded text-pink-300 whitespace-nowrap ml-2">
-                            {podcast.platform}
-                          </span>
-                        </div>
-                        <a
-                          href={podcast.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs px-3 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded font-semibold transition inline-block mt-3"
-                        >
-                          Listen Now →
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
