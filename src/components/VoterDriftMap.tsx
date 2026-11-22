@@ -189,7 +189,7 @@ export function VoterDriftMap() {
                     : 'bg-white text-slate-900 border-2 border-slate-300 hover:border-red-600'
                 }`}
               >
-                {year}{year === 2026 ? ' (Most Recent)' : ''}
+                {year}{year === 2026 ? ' (US Senate)' : year === 2024 ? ' (President)' : ''}
               </button>
             ))}
           </div>
