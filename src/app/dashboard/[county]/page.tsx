@@ -23,16 +23,27 @@ interface CountyData {
   electionHistory: any[]
   electionTrends?: {
     total_votes_2016: number
+    total_votes_2020: number
     total_votes_2024: number
     votes_growth_pct: number
     dem_baseline_percent: number
     rep_baseline_percent: number
+    dem_2020_percent: number
+    rep_2020_percent: number
     dem_current_percent: number
     rep_current_percent: number
     margin_2016_pct: number
+    margin_2020_pct: number
     margin_2024_pct: number
-    margin_change_pct: number
+    margin_change_2016_2020_pct: number
+    margin_change_2020_2024_pct: number
+    margin_change_2016_2024_pct: number
+    dem_change_2016_2020_pct: number
+    dem_change_2020_2024_pct: number
+    rep_change_2016_2020_pct: number
+    rep_change_2020_2024_pct: number
     third_party_2016_pct: number
+    third_party_2020_pct: number
     third_party_2024_pct: number
   } | null
 }
@@ -176,16 +187,27 @@ async function getCountyData(county: string, supabase: any) {
       electionHistory: historyRes.rows || [],
       electionTrends: driftData ? {
         total_votes_2016: driftData.total_votes_2016,
+        total_votes_2020: driftData.total_votes_2020,
         total_votes_2024: driftData.total_votes_2024,
         votes_growth_pct: driftData.votes_growth_pct,
         dem_baseline_percent: driftData.dem_baseline_percent,
         rep_baseline_percent: driftData.rep_baseline_percent,
+        dem_2020_percent: driftData.dem_2020_percent,
+        rep_2020_percent: driftData.rep_2020_percent,
         dem_current_percent: driftData.dem_current_percent,
         rep_current_percent: driftData.rep_current_percent,
         margin_2016_pct: driftData.margin_2016_pct,
+        margin_2020_pct: driftData.margin_2020_pct,
         margin_2024_pct: driftData.margin_2024_pct,
-        margin_change_pct: driftData.margin_change_pct,
+        margin_change_2016_2020_pct: driftData.margin_change_2016_2020_pct,
+        margin_change_2020_2024_pct: driftData.margin_change_2020_2024_pct,
+        margin_change_2016_2024_pct: driftData.margin_change_2016_2024_pct,
+        dem_change_2016_2020_pct: driftData.dem_change_2016_2020_pct,
+        dem_change_2020_2024_pct: driftData.dem_change_2020_2024_pct,
+        rep_change_2016_2020_pct: driftData.rep_change_2016_2020_pct,
+        rep_change_2020_2024_pct: driftData.rep_change_2020_2024_pct,
         third_party_2016_pct: driftData.third_party_2016_pct,
+        third_party_2020_pct: driftData.third_party_2020_pct,
         third_party_2024_pct: driftData.third_party_2024_pct,
       } : null,
     }
@@ -390,91 +412,109 @@ function CountyDashboardContent() {
             <h2 className="text-2xl font-black text-slate-300 mb-2">📊 MIT PRESIDENTIAL ELECTION TRENDS</h2>
             <p className="text-sm text-slate-400 mb-6">Verified county returns for 2016, 2020, and 2024</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Ballots Cast */}
-              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-blue-500">
-                <h3 className="font-bold text-blue-400 mb-4">Ballots Cast</h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-slate-400">2016 Total</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.electionTrends.total_votes_2016.toLocaleString()}
-                    </p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+              {[
+                {
+                  year: 2016,
+                  total: data.electionTrends.total_votes_2016,
+                  democrat: data.electionTrends.dem_baseline_percent,
+                  republican: data.electionTrends.rep_baseline_percent,
+                  other: data.electionTrends.third_party_2016_pct,
+                  margin: data.electionTrends.margin_2016_pct,
+                },
+                {
+                  year: 2020,
+                  total: data.electionTrends.total_votes_2020,
+                  democrat: data.electionTrends.dem_2020_percent,
+                  republican: data.electionTrends.rep_2020_percent,
+                  other: data.electionTrends.third_party_2020_pct,
+                  margin: data.electionTrends.margin_2020_pct,
+                },
+                {
+                  year: 2024,
+                  total: data.electionTrends.total_votes_2024,
+                  democrat: data.electionTrends.dem_current_percent,
+                  republican: data.electionTrends.rep_current_percent,
+                  other: data.electionTrends.third_party_2024_pct,
+                  margin: data.electionTrends.margin_2024_pct,
+                },
+              ].map((year) => (
+                <div key={year.year} className="bg-slate-700/50 rounded-lg p-5 border border-slate-600">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-black text-slate-100">{year.year}</h3>
+                    <span className="text-xs text-slate-400">{year.total.toLocaleString()} votes</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-400">2024 Total</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.electionTrends.total_votes_2024.toLocaleString()}
-                    </p>
+                  <div className="h-4 rounded-full overflow-hidden flex mb-4 bg-slate-600">
+                    <div className="bg-blue-600 h-full" style={{ width: `${year.democrat}%` }} />
+                    <div className="bg-red-600 h-full" style={{ width: `${year.republican}%` }} />
+                    <div className="bg-slate-400 h-full" style={{ width: `${year.other}%` }} />
                   </div>
-                  <div className={`pt-3 border-t border-slate-600 flex items-center justify-between`}>
-                    <span className="text-sm text-slate-400">Change:</span>
-                    <span className={`text-lg font-bold ${
-                      data.electionTrends.votes_growth_pct > 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {data.electionTrends.votes_growth_pct > 0 ? '+' : ''}
-                      {data.electionTrends.votes_growth_pct.toFixed(1)}%
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-300">Democratic</span>
+                      <strong>{year.democrat.toFixed(1)}%</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-red-300">Republican</span>
+                      <strong>{year.republican.toFixed(1)}%</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Other</span>
+                      <strong>{year.other.toFixed(1)}%</strong>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-600 flex justify-between">
+                    <span className="text-xs text-slate-400">R − D margin</span>
+                    <span className="font-black text-slate-100">
+                      {year.margin > 0 ? '+' : ''}{year.margin.toFixed(1)} pts
                     </span>
                   </div>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* 2024 Vote Share */}
-              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-purple-500">
-                <h3 className="font-bold text-purple-400 mb-4">2024 Vote Share</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-blue-400">Democratic</span>
-                    <span className="font-bold text-slate-200">{data.electionTrends.dem_current_percent.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-red-400">Republican</span>
-                    <span className="font-bold text-slate-200">{data.electionTrends.rep_current_percent.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Other / write-in</span>
-                    <span className="font-bold text-slate-200">{data.electionTrends.third_party_2024_pct.toFixed(1)}%</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[
+                {
+                  label: '2016 → 2020',
+                  dem: data.electionTrends.dem_change_2016_2020_pct,
+                  rep: data.electionTrends.rep_change_2016_2020_pct,
+                  margin: data.electionTrends.margin_change_2016_2020_pct,
+                },
+                {
+                  label: '2020 → 2024',
+                  dem: data.electionTrends.dem_change_2020_2024_pct,
+                  rep: data.electionTrends.rep_change_2020_2024_pct,
+                  margin: data.electionTrends.margin_change_2020_2024_pct,
+                },
+                {
+                  label: '2016 → 2024',
+                  dem: data.drift.dem_drift_pct,
+                  rep: data.drift.rep_drift_pct,
+                  margin: data.electionTrends.margin_change_2016_2024_pct,
+                },
+              ].map((period) => (
+                <div key={period.label} className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
+                  <h3 className="font-bold text-yellow-400 mb-4">{period.label} drift</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-300">Democratic change</span>
+                      <strong>{period.dem > 0 ? '+' : ''}{period.dem.toFixed(1)} pts</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-red-300">Republican change</span>
+                      <strong>{period.rep > 0 ? '+' : ''}{period.rep.toFixed(1)} pts</strong>
+                    </div>
+                    <div className="pt-3 border-t border-slate-700 flex justify-between">
+                      <span className="text-slate-300">Margin shift</span>
+                      <strong className={period.margin >= 0 ? 'text-red-300' : 'text-blue-300'}>
+                        {period.margin > 0 ? '+' : ''}{period.margin.toFixed(1)} pts
+                        {' '}{period.margin >= 0 ? 'R' : 'D'}
+                      </strong>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Partisan Margin */}
-              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-orange-500">
-                <h3 className="font-bold text-orange-400 mb-4">Partisan Margin</h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-slate-400">2016 Republican minus Democratic</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.electionTrends.margin_2016_pct > 0 ? '+' : ''}
-                      {data.electionTrends.margin_2016_pct.toFixed(1)} pts
-                    </p>
-                  </div>
-                  <div className="pt-3 border-t border-slate-600">
-                    <p className="text-sm text-slate-400">2024 Republican minus Democratic</p>
-                    <p className="text-2xl font-bold text-slate-200">
-                      {data.electionTrends.margin_2024_pct > 0 ? '+' : ''}
-                      {data.electionTrends.margin_2024_pct.toFixed(1)} pts
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Margin Shift */}
-              <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-yellow-500">
-                <h3 className="font-bold text-yellow-400 mb-4">Margin Shift Since 2016</h3>
-                <div className="space-y-3">
-                  <p className="text-2xl font-bold text-slate-200">
-                    {data.electionTrends.margin_change_pct > 0 ? '+' : ''}
-                    {data.electionTrends.margin_change_pct.toFixed(1)} pts
-                  </p>
-                  <p className="text-sm text-slate-400">
-                    {data.electionTrends.margin_change_pct >= 0 ? 'Toward Republican' : 'Toward Democratic'} vote share
-                  </p>
-                  <p className="text-xs text-slate-500 pt-3 border-t border-slate-600">
-                    Other-party share changed from {data.electionTrends.third_party_2016_pct.toFixed(1)}% in 2016 to {data.electionTrends.third_party_2024_pct.toFixed(1)}% in 2024.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         )}

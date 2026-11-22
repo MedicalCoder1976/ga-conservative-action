@@ -61,15 +61,37 @@ export async function GET(request: NextRequest) {
     }
 
     const margin2016 = driftData.rep_baseline_percent - driftData.dem_baseline_percent
+    const margin2020 = driftData.rep_2020_percent - driftData.dem_2020_percent
     const margin2024 = driftData.rep_current_percent - driftData.dem_current_percent
+
+    const { data: voters2020, error: voters2020Error } = await supabase
+      .from('county_voter_statistics')
+      .select('total_votes')
+      .eq('county', decodedCounty)
+      .eq('election_year', 2020)
+      .single()
+
+    if (voters2020Error) {
+      console.error('2020 vote query error:', voters2020Error)
+      return NextResponse.json({ error: 'County 2020 totals not found' }, { status: 404, headers })
+    }
 
     return NextResponse.json({
       ...driftData,
       margin_2016_pct: margin2016,
+      margin_2020_pct: margin2020,
       margin_2024_pct: margin2024,
-      margin_change_pct: margin2024 - margin2016,
+      margin_change_2016_2020_pct: margin2020 - margin2016,
+      margin_change_2020_2024_pct: margin2024 - margin2020,
+      margin_change_2016_2024_pct: margin2024 - margin2016,
+      dem_change_2016_2020_pct: driftData.dem_2020_percent - driftData.dem_baseline_percent,
+      dem_change_2020_2024_pct: driftData.dem_current_percent - driftData.dem_2020_percent,
+      rep_change_2016_2020_pct: driftData.rep_2020_percent - driftData.rep_baseline_percent,
+      rep_change_2020_2024_pct: driftData.rep_current_percent - driftData.rep_2020_percent,
+      third_party_2020_pct: 100 - driftData.dem_2020_percent - driftData.rep_2020_percent,
       third_party_2016_pct: 100 - driftData.dem_baseline_percent - driftData.rep_baseline_percent,
       third_party_2024_pct: 100 - driftData.dem_current_percent - driftData.rep_current_percent,
+      total_votes_2020: voters2020.total_votes,
     }, { headers })
   } catch (error) {
     console.error('API error:', error)
