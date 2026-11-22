@@ -50,7 +50,7 @@ A production-ready Next.js application for tracking voter engagement across Geor
 ### Core
 - ✓ Multi-provider authentication (Google, Apple, Facebook, Email)
 - ✓ Interactive Georgia county map with activity tracking
-- ✓ 2026 election results and demographic data
+- ✓ Verified county election results for 2016, 2018, 2020, 2022, and 2024
 - ✓ Exit poll analysis by county
 - ✓ Activity logging with photo uploads and points system
 - ✓ Real-time color intensity based on volunteer activity
@@ -129,7 +129,7 @@ npm run lint         # Run ESLint
 - **counties** - Georgia county data and activity scores
 - **activities** - Logged volunteer activities
 - **suggested_activities** - Activity templates with point values
-- **election_results** - 2026 election data by county
+- **election_results** - application election data by county
 - **exit_polls** - Voter behavior analysis
 - **demographics** - Population statistics
 - **badges** - User achievements
@@ -137,6 +137,32 @@ npm run lint         # Run ESLint
 - **education_topics** - Educational resources
 
 See [SUPABASE_SCHEMA.sql](./SUPABASE_SCHEMA.sql) for full schema.
+
+## Verified Election Data
+
+County election history is stored in `public/data/georgia-county-election-results-2016-2024.csv`
+and includes:
+
+- U.S. President
+- U.S. Senate, including Georgia's 2020 special election and 2022 runoff
+- U.S. House
+- Governor
+- Georgia State Senate
+- Georgia State House
+
+Each row preserves the source repository, pinned source URL, source filename, election date,
+county FIPS code, district, candidate, party, and vote count. MEDSL's `STATE FLOATING` rows
+without a county are excluded from county output rather than estimated.
+
+Rebuild and validate the file with:
+
+```bash
+python scripts/import_county_election_sources.py
+```
+
+Sources are the official MIT Election Data + Science Lab precinct return archives for
+2016, 2018, 2020, 2022, and 2024. The generator validates that statewide contests cover
+all 159 counties and rejects negative or missing-vote records.
 
 ## 🔐 Security
 

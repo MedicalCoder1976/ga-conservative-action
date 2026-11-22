@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { ArrowLeft, Users, BarChart3, TrendingUp, Calendar, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import CountyElectionHistory from '@/components/CountyElectionHistory'
 
 interface CountyData {
   county: any
@@ -19,6 +20,7 @@ interface CountyData {
   talkingPoints: any[]
   podcasters: any[]
   drift: any
+  electionHistory: any[]
   electionTrends?: {
     total_votes_2016: number
     total_votes_2024: number
@@ -47,6 +49,7 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: [],
       podcasters: [],
       drift: null,
+      electionHistory: [],
     }
   }
 
@@ -55,7 +58,7 @@ async function getCountyData(county: string, supabase: any) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes] = await Promise.all([
+    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes] = await Promise.all([
       supabase
         .from('counties')
         .select('*')
@@ -99,6 +102,16 @@ async function getCountyData(county: string, supabase: any) {
       }).catch(err => {
         console.error('Drift fetch error:', err)
         return { error: err.message }
+      }),
+      fetch(`/api/county-elections?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => {
+        if (!r.ok) {
+          console.error(`County elections API returned ${r.status}:`, r.statusText)
+          return { error: `HTTP ${r.status}`, rows: [] }
+        }
+        return r.json()
+      }).catch(err => {
+        console.error('County elections fetch error:', err)
+        return { error: err.message, rows: [] }
       }),
     ])
 
@@ -160,6 +173,7 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: pointsRes.data || [],
       podcasters: mockPodcasters,
       drift: driftData,
+      electionHistory: historyRes.rows || [],
       electionTrends: driftData ? {
         total_votes_2016: driftData.total_votes_2016,
         total_votes_2024: driftData.total_votes_2024,
@@ -188,6 +202,7 @@ async function getCountyData(county: string, supabase: any) {
       podcasters: [],
       drift: null,
       electionTrends: null,
+      electionHistory: [],
     }
   }
 }
@@ -226,6 +241,7 @@ function CountyDashboardContent() {
     talkingPoints: [],
     podcasters: [],
     drift: null,
+    electionHistory: [],
     electionTrends: null,
   })
   const [loading, setLoading] = useState(true)
@@ -365,6 +381,8 @@ function CountyDashboardContent() {
             </div>
           )}
         </div>
+
+        <CountyElectionHistory county={decodedCounty} rows={data.electionHistory} />
 
         {/* MIT Presidential Election Trends */}
         {data.electionTrends && (
