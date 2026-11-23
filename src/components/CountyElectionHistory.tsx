@@ -31,6 +31,15 @@ function normalizeOffice(office: string) {
     .replace(/\s*\(Rep|Dem\)\s*$/i, '')
     .trim()
 
+  if (/^State Senate\b/i.test(normalized)) {
+    return 'Georgia State Senate'
+  }
+  if (/^State House of Representatives\b/i.test(normalized)) {
+    return 'Georgia State House'
+  }
+  if (/^State House\b/i.test(normalized)) {
+    return 'Georgia State House'
+  }
   if (/^US House of Representatives\b/i.test(normalized)) {
     return 'US House of Representatives'
   }
@@ -44,10 +53,12 @@ function featuredOfficeRank(office: string) {
   if (office === 'US Senate' || office === 'US Senate (Special)') return 0
   if (office === 'Governor') return 1
   if (office === 'US House of Representatives' || office === 'US House') return 2
-  if (office === 'US President') return 3
-  if (office === 'Lieutenant Governor') return 4
-  if (office === 'Secretary of State') return 5
-  if (office === 'Attorney General') return 6
+  if (office === 'Georgia State Senate') return 3
+  if (office === 'Georgia State House') return 4
+  if (office === 'US President') return 5
+  if (office === 'Lieutenant Governor') return 6
+  if (office === 'Secretary of State') return 7
+  if (office === 'Attorney General') return 8
   return 100
 }
 
@@ -56,6 +67,13 @@ function stageLabel(stage: string) {
   if (stage === 'runoff') return 'Runoff'
   if (stage === 'primary') return 'Primary'
   return stage
+}
+
+function contestStageRank(stage: string) {
+  if (stage === 'general') return 0
+  if (stage === 'runoff') return 2
+  if (stage === 'primary') return 3
+  return 1
 }
 
 function partyColor(party: string) {
@@ -116,7 +134,8 @@ export default function CountyElectionHistory({ county, rows }: Props) {
         }
       })
       .sort((a, b) => (
-        featuredOfficeRank(a.office) - featuredOfficeRank(b.office)
+        contestStageRank(a.stage) - contestStageRank(b.stage)
+        || featuredOfficeRank(a.office) - featuredOfficeRank(b.office)
         || a.date.localeCompare(b.date)
         || a.district.localeCompare(b.district)
       ))
@@ -168,7 +187,10 @@ export default function CountyElectionHistory({ county, rows }: Props) {
                   )}
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  {contest.date} · {stageLabel(contest.stage)}
+                  {contest.date} ·
+                  {contest.stage === 'primary' || contest.stage === 'runoff'
+                    ? <strong className="ml-1 font-black text-slate-100">{stageLabel(contest.stage).toUpperCase()}</strong>
+                    : <span className="ml-1">{stageLabel(contest.stage)}</span>}
                   {contest.district ? ` · District ${contest.district}` : ''}
                 </p>
               </div>

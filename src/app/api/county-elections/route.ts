@@ -29,6 +29,8 @@ let cached2026RawRows: {
   office: string
   candidate: string
   votes: string
+  district: string
+  party: string
 }[] | null = null
 
 function parseCsv(text: string) {
@@ -116,6 +118,8 @@ async function load2026RawRows() {
         office: raw['Office Name'] ?? '',
         candidate: raw['Ballot Name'] ?? '',
         votes: raw.Total ?? '',
+        district: String(raw['Contest ID'] ?? ''),
+        party: String(raw.Party ?? ''),
       }
     })
   return cached2026RawRows
@@ -130,6 +134,21 @@ function rawOfficeMatches(consolidatedOffice: string, rawOffice: string, distric
     )
   }
   return false
+}
+
+function normalizeElectionOffice(office: string) {
+  if (/^US House of Representatives\b/i.test(office) || /^US House\b/i.test(office)) {
+    return 'US House of Representatives'
+  }
+  if (/^State Senate\b/i.test(office) || /^Georgia State Senate\b/i.test(office)) {
+    return 'Georgia State Senate'
+  }
+  if (/^State House of Representatives\b/i.test(office)
+    || /^State House\b/i.test(office)
+    || /^Georgia State House\b/i.test(office)) {
+    return 'Georgia State House'
+  }
+  return office
 }
 
 export async function GET(request: NextRequest) {
@@ -173,6 +192,63 @@ export async function GET(request: NextRequest) {
     }
   })
 
+  const countyName = decodedCounty.toLocaleLowerCase()
+  const generalStateRows = raw2026Rows
+    .filter((rawRow) =>
+      rawRow.county.replace(/\s+County$/i, '').trim().toLocaleLowerCase() === countyName
+      && /^(US House of Representatives|State Senate|State House of Representatives)\b/i.test(rawRow.office)
+      && rawRow.candidate
+      && !/^Total Votes$/i.test(rawRow.candidate)
+      && !/^Ballots Cast$/i.test(rawRow.candidate)
+    )
+    .map((rawRow) => {
+      const officeMatch = rawRow.office.match(
+        /(US House of Representatives|State Senate|State House of Representatives)(?: - District ([0-9]+))?/i,
+      )
+      const officeType = officeMatch?.[1] ?? rawRow.office
+      const district = officeMatch?.[2] ?? ''
+      const office = /^US House/i.test(officeType)
+        ? 'US House of Representatives'
+        : /^State Senate/i.test(officeType)
+          ? 'Georgia State Senate'
+          : 'Georgia State House'
+      const party = rawRow.party.toUpperCase()
+      return {
+        election_year: '2026',
+        election_date: '2026-11-03',
+        stage: 'general',
+        office,
+        district,
+        county: decodedCounty,
+        county_fips: '',
+        candidate: rawRow.candidate.replace(/\s+\((Rep|Dem|Ind)\)\s*$/i, ''),
+        party: party === 'DEM'
+          || party === 'DEMOCRAT'
+          ? 'DEMOCRAT'
+          : party === 'REP' || party === 'REPUBLICAN'
+            ? 'REPUBLICAN'
+            : 'OTHER',
+        votes: rawRow.votes,
+        source_name: 'Georgia Secretary of State, official 2026 election results',
+        source_url: 'https://results.sos.ga.gov/results/public/api/elections/Georgia/11032026GeneralAndSpecialElection',
+        source_file: '2026-11-03-general-and-special-election-county-results.csv',
+      } as ElectionRow
+    })
+
+  const mergedRows = [...augmentedRows, ...generalStateRows].map((row) => ({
+    ...row,
+    office: normalizeElectionOffice(row.office),
+  })).filter((row, index, allRows) => (
+    allRows.findIndex((candidate) =>
+      candidate.election_year === row.election_year
+      && candidate.election_date === row.election_date
+      && candidate.stage === row.stage
+      && candidate.office === row.office
+      && candidate.district === row.district
+      && candidate.candidate === row.candidate
+    ) === index
+  ))
+
   const statewide2026 = (await loadRows()).filter(
     (row) => row.election_year === '2026' && row.stage === 'general',
   )
@@ -197,7 +273,7 @@ export async function GET(request: NextRequest) {
     'US Senate': senateStatewide,
     Governor: governorStatewide,
   }
-  const rowsWithStatewideContext = augmentedRows.map((row) => {
+  const rowsWithStatewideContext = mergedRows.map((row) => {
     if (row.election_year !== '2026' || row.stage !== 'general') return row
     const statewide = statewideByOffice[row.office as keyof typeof statewideByOffice]
     if (!statewide) return row
