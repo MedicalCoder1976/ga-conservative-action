@@ -1,0 +1,17 @@
+{
+  "method": "estimated_nonvoters = active registered voters - certified ballots cast",
+  "cycle_2024": {
+    "active_registered_voters": "EAVS 2024 Georgia jurisdiction submission",
+    "ballots_cast": "Georgia SOS November 5, 2024 General Election County Results workbook",
+    "date_basis": "2024 general-election cycle",
+    "source_file": "2024-11-05-eavs-2024-active-voters-by-county.csv"
+  },
+  "cycle_2026": {
+    "active_registered_voters": "Georgia SOS Active Voters Tableau, November 23, 2026",
+    "ballots_cast": "Georgia SOS November 3, 2026 General and Special Election County Results workbook",
+    "date_basis": "2026 general-election cycle",
+    "source_file": "2026-11-23-sos-active-voters-by-county.csv"
+  },
+  "comparison": "georgia-county-nonvoter-comparison-2024-2026.csv",
+  "warning": "Active-voter definitions must remain consistent when interpreting these estimates. This is not a count of individual eligible residents who did not vote."
+}

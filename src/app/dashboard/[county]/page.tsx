@@ -20,6 +20,7 @@ interface CountyData {
   talkingPoints: any[]
   drift: any
   electionHistory: any[]
+  nonvoterEstimate: any
   electionTrends?: {
     total_votes_2016: number
     total_votes_2020: number
@@ -70,6 +71,7 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: [],
       drift: null,
       electionHistory: [],
+      nonvoterEstimate: null,
     }
   }
 
@@ -78,7 +80,7 @@ async function getCountyData(county: string, supabase: any) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes] = await Promise.all([
+    const [countyRes, electionRes, demographicsRes, pollsRes, leadersRes, pointsRes, driftRes, historyRes, nonvoterRes] = await Promise.all([
       supabase
         .from('counties')
         .select('*')
@@ -142,6 +144,10 @@ async function getCountyData(county: string, supabase: any) {
         console.error('County elections fetch error:', err)
         return { error: err.message, rows: [] }
       }),
+      fetch(`/api/county-nonvoters?county=${encodeURIComponent(decodeURIComponent(county))}`).then(r => {
+        if (!r.ok) return { error: `HTTP ${r.status}` }
+        return r.json()
+      }).catch(err => ({ error: err.message })),
     ])
 
     // Transform election data to include percentages
@@ -174,6 +180,7 @@ async function getCountyData(county: string, supabase: any) {
       talkingPoints: pointsRes.data || [],
       drift: driftData,
       electionHistory: historyRes.rows || [],
+      nonvoterEstimate: nonvoterRes && !nonvoterRes.error ? nonvoterRes : null,
       electionTrends: driftData ? {
         total_votes_2016: driftData.total_votes_2016,
         total_votes_2020: driftData.total_votes_2020,
@@ -224,6 +231,7 @@ async function getCountyData(county: string, supabase: any) {
       drift: null,
       electionTrends: null,
       electionHistory: [],
+      nonvoterEstimate: null,
     }
   }
 }
@@ -262,6 +270,7 @@ function CountyDashboardContent() {
     talkingPoints: [],
     drift: null,
     electionHistory: [],
+    nonvoterEstimate: null,
     electionTrends: null,
   })
   const [loading, setLoading] = useState(true)
@@ -409,6 +418,45 @@ function CountyDashboardContent() {
         </div>
 
         <CountyElectionHistory county={decodedCounty} rows={data.electionHistory} />
+
+        {data.nonvoterEstimate && (
+          <section className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">
+            <h2 className="text-2xl font-black text-slate-100 mb-2">Estimated Non-Voters by Cycle</h2>
+            <p className="text-sm text-slate-400 mb-6">
+              Active registered voters minus certified ballots cast. 2024 uses Georgia EAVS active-voter data; 2026 uses the Georgia SOS active-voter report.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
+                <p className="text-xs uppercase tracking-wide text-slate-400">2024 estimated non-voters</p>
+                <p className="text-3xl font-black text-yellow-300 mt-2">
+                  {data.nonvoterEstimate.estimated_nonvoters_2024.toLocaleString()}
+                </p>
+                <p className="text-xs text-slate-400 mt-2">
+                  {data.nonvoterEstimate.active_registered_2024.toLocaleString()} active - {data.nonvoterEstimate.ballots_cast_2024.toLocaleString()} ballots
+                </p>
+              </div>
+              <div className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
+                <p className="text-xs uppercase tracking-wide text-slate-400">2026 estimated non-voters</p>
+                <p className="text-3xl font-black text-yellow-300 mt-2">
+                  {data.nonvoterEstimate.estimated_nonvoters_2026.toLocaleString()}
+                </p>
+                <p className="text-xs text-slate-400 mt-2">
+                  {data.nonvoterEstimate.active_registered_2026.toLocaleString()} active - {data.nonvoterEstimate.ballots_cast_2026.toLocaleString()} ballots
+                </p>
+              </div>
+              <div className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
+                <p className="text-xs uppercase tracking-wide text-slate-400">2026 minus 2024</p>
+                <p className={`text-3xl font-black mt-2 ${data.nonvoterEstimate.nonvoter_change_2026_minus_2024 >= 0 ? 'text-red-300' : 'text-green-300'}`}>
+                  {data.nonvoterEstimate.nonvoter_change_2026_minus_2024 >= 0 ? '+' : ''}
+                  {data.nonvoterEstimate.nonvoter_change_2026_minus_2024.toLocaleString()}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-5">
+              Estimated non-voters are not the same as eligible residents who did not vote. This comparison uses active-registration counts and may change when newer certified registration snapshots are published.
+            </p>
+          </section>
+        )}
 
         {/* Verified Presidential and 2026 Election Trends */}
         {data.electionTrends && (
