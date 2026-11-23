@@ -417,7 +417,11 @@ function CountyDashboardContent() {
           )}
         </div>
 
-        <CountyElectionHistory county={decodedCounty} rows={data.electionHistory} />
+        <CountyElectionHistory
+          county={decodedCounty}
+          rows={data.electionHistory}
+          nonvoterEstimate={data.nonvoterEstimate}
+        />
 
         {data.nonvoterEstimate && (
           <section className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600/50 rounded-xl p-8 mb-8">

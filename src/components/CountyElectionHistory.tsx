@@ -23,6 +23,14 @@ type ElectionRow = {
 type Props = {
   county: string
   rows: ElectionRow[]
+  nonvoterEstimate?: {
+    active_registered_2024: number
+    ballots_cast_2024: number
+    estimated_nonvoters_2024: number
+    active_registered_2026: number
+    ballots_cast_2026: number
+    estimated_nonvoters_2026: number
+  } | null
 }
 
 function normalizeOffice(office: string) {
@@ -84,7 +92,7 @@ function partyColor(party: string) {
   return 'bg-slate-500'
 }
 
-export default function CountyElectionHistory({ county, rows }: Props) {
+export default function CountyElectionHistory({ county, rows, nonvoterEstimate }: Props) {
   const years = useMemo(
     () => [...new Set(rows.map((row) => Number(row.election_year)))].sort((a, b) => b - a),
     [rows],
@@ -169,6 +177,37 @@ export default function CountyElectionHistory({ county, rows }: Props) {
           ))}
         </div>
       </div>
+
+      {nonvoterEstimate && (selectedYear === 2024 || selectedYear === 2026) && (
+        <div className="mb-6 rounded-lg border border-yellow-600/40 bg-slate-950/35 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-black text-yellow-300">
+                Estimated registered voters who did not vote
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Active registered voters minus certified ballots cast
+              </p>
+            </div>
+            <div className="text-left sm:text-right">
+              <p className="text-3xl font-black text-yellow-200">
+                {selectedYear === 2024
+                  ? nonvoterEstimate.estimated_nonvoters_2024.toLocaleString()
+                  : nonvoterEstimate.estimated_nonvoters_2026.toLocaleString()}
+              </p>
+              <p className="text-xs text-slate-400">
+                {selectedYear === 2024
+                  ? `${nonvoterEstimate.active_registered_2024.toLocaleString()} active registered`
+                  : `${nonvoterEstimate.active_registered_2026.toLocaleString()} active registered`}
+                {' - '}
+                {selectedYear === 2024
+                  ? `${nonvoterEstimate.ballots_cast_2024.toLocaleString()} ballots cast`
+                  : `${nonvoterEstimate.ballots_cast_2026.toLocaleString()} ballots cast`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-5">
         {contests.map((contest) => (
