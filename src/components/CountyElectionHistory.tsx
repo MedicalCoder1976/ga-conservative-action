@@ -183,10 +183,10 @@ export default function CountyElectionHistory({ county, rows, nonvoterEstimate }
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-black text-yellow-300">
-                Estimated registered voters who did not vote
+                {selectedYear} estimated registered voters who did not vote
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                Active registered voters minus certified ballots cast
+                {selectedYear} active registered voters minus {selectedYear} certified ballots cast
               </p>
             </div>
             <div className="text-left sm:text-right">
