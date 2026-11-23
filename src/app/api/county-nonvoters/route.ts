@@ -90,9 +90,15 @@ export async function GET(request: NextRequest) {
     active_registered_2024: Number(row.active_registered_2024),
     ballots_cast_2024: Number(row.ballots_cast_2024),
     estimated_nonvoters_2024: Number(row.estimated_nonvoters_2024),
+    turnout_2024_pct: Number(row.active_registered_2024) > 0
+      ? (Number(row.ballots_cast_2024) / Number(row.active_registered_2024)) * 100
+      : null,
     active_registered_2026: Number(row.active_registered_2026),
     ballots_cast_2026: Number(row.ballots_cast_2026),
     estimated_nonvoters_2026: Number(row.estimated_nonvoters_2026),
+    turnout_2026_pct: Number(row.active_registered_2026) > 0
+      ? (Number(row.ballots_cast_2026) / Number(row.active_registered_2026)) * 100
+      : null,
     nonvoter_change_2026_minus_2024: Number(row.nonvoter_change_2026_minus_2024),
     source_2024: row.source_2024,
     source_2026: row.source_2026,

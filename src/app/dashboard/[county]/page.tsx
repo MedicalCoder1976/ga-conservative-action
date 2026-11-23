@@ -434,6 +434,17 @@ function CountyDashboardContent() {
                 <p className="text-xs text-slate-400 mt-2">
                   {data.nonvoterEstimate.active_registered_2024.toLocaleString()} active - {data.nonvoterEstimate.ballots_cast_2024.toLocaleString()} ballots
                 </p>
+                <p className="text-sm font-bold text-slate-200 mt-3">
+                  {data.nonvoterEstimate.active_registered_2024 > 0
+                    ? `${((data.nonvoterEstimate.ballots_cast_2024 / data.nonvoterEstimate.active_registered_2024) * 100).toFixed(1)}% active-voter turnout`
+                    : 'Turnout unavailable'}
+                </p>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="h-full bg-yellow-400"
+                    style={{ width: `${data.nonvoterEstimate.active_registered_2024 > 0 ? Math.min(100, (data.nonvoterEstimate.ballots_cast_2024 / data.nonvoterEstimate.active_registered_2024) * 100) : 0}%` }}
+                  />
+                </div>
               </div>
               <div className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
                 <p className="text-xs uppercase tracking-wide text-slate-400">2026 estimated non-voters</p>
@@ -443,6 +454,17 @@ function CountyDashboardContent() {
                 <p className="text-xs text-slate-400 mt-2">
                   {data.nonvoterEstimate.active_registered_2026.toLocaleString()} active - {data.nonvoterEstimate.ballots_cast_2026.toLocaleString()} ballots
                 </p>
+                <p className="text-sm font-bold text-slate-200 mt-3">
+                  {data.nonvoterEstimate.active_registered_2026 > 0
+                    ? `${((data.nonvoterEstimate.ballots_cast_2026 / data.nonvoterEstimate.active_registered_2026) * 100).toFixed(1)}% active-voter turnout`
+                    : 'Turnout unavailable'}
+                </p>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="h-full bg-yellow-400"
+                    style={{ width: `${data.nonvoterEstimate.active_registered_2026 > 0 ? Math.min(100, (data.nonvoterEstimate.ballots_cast_2026 / data.nonvoterEstimate.active_registered_2026) * 100) : 0}%` }}
+                  />
+                </div>
               </div>
               <div className="bg-slate-900/45 border border-slate-600 rounded-lg p-5">
                 <p className="text-xs uppercase tracking-wide text-slate-400">2026 minus 2024</p>

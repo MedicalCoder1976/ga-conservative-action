@@ -20,15 +20,38 @@ type Props = {
   rows: ElectionRow[]
 }
 
-const officeOrder = [
-  'US President',
-  'US Senate',
-  'US Senate (Special)',
-  'US House',
-  'Governor',
-  'Georgia State Senate',
-  'Georgia State House',
-]
+function normalizeOffice(office: string) {
+  const normalized = office
+    .replace(/\s+-\s+(Rep|Dem|Lib|Ind)\s*$/i, '')
+    .replace(/\s*\(Rep|Dem\)\s*$/i, '')
+    .trim()
+
+  if (/^US House of Representatives\b/i.test(normalized)) {
+    return 'US House of Representatives'
+  }
+  if (/^US House\b/i.test(normalized)) {
+    return 'US House'
+  }
+  return normalized
+}
+
+function featuredOfficeRank(office: string) {
+  if (office === 'US Senate' || office === 'US Senate (Special)') return 0
+  if (office === 'Governor') return 1
+  if (office === 'US House of Representatives' || office === 'US House') return 2
+  if (office === 'US President') return 3
+  if (office === 'Lieutenant Governor') return 4
+  if (office === 'Secretary of State') return 5
+  if (office === 'Attorney General') return 6
+  return 100
+}
+
+function stageLabel(stage: string) {
+  if (stage === 'general') return 'Final General Election'
+  if (stage === 'runoff') return 'Runoff'
+  if (stage === 'primary') return 'Primary'
+  return stage
+}
 
 function partyColor(party: string) {
   if (party === 'DEMOCRAT') return 'bg-blue-600'
@@ -49,7 +72,8 @@ export default function CountyElectionHistory({ county, rows }: Props) {
     const groups = new Map<string, ElectionRow[]>()
     for (const row of rows) {
       if (Number(row.election_year) !== selectedYear) continue
-      const key = `${row.election_date}|${row.stage}|${row.office}|${row.district}`
+      const office = normalizeOffice(row.office)
+      const key = `${row.election_date}|${row.stage}|${office}|${row.district}`
       groups.set(key, [...(groups.get(key) ?? []), row])
     }
 
@@ -66,7 +90,7 @@ export default function CountyElectionHistory({ county, rows }: Props) {
         }
       })
       .sort((a, b) => (
-        officeOrder.indexOf(a.office) - officeOrder.indexOf(b.office)
+        featuredOfficeRank(a.office) - featuredOfficeRank(b.office)
         || a.date.localeCompare(b.date)
         || a.district.localeCompare(b.district)
       ))
@@ -109,9 +133,16 @@ export default function CountyElectionHistory({ county, rows }: Props) {
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div>
-                <h3 className="font-black text-slate-100">{contest.office}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-black text-slate-100">{contest.office}</h3>
+                  {contest.stage === 'general' && Number(contest.date.slice(0, 4)) === 2026 && (
+                    <span className="rounded-full bg-green-700/40 border border-green-500/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-300">
+                      Final
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  {contest.date} · {contest.stage === 'runoff' ? 'Runoff' : 'General election'}
+                  {contest.date} · {stageLabel(contest.stage)}
                   {contest.district ? ` · District ${contest.district}` : ''}
                 </p>
               </div>
