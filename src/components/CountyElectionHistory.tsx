@@ -13,6 +13,8 @@ type ElectionRow = {
   votes: string
   source_name: string
   source_url: string
+  contest_total_votes?: string
+  ballots_cast?: string
 }
 
 type Props = {
@@ -80,13 +82,22 @@ export default function CountyElectionHistory({ county, rows }: Props) {
     return [...groups.entries()]
       .map(([key, candidates]) => {
         const [date, stage, office, district] = key.split('|')
+        const officialTotal = candidates
+          .map((candidate) => Number(candidate.contest_total_votes))
+          .find((value) => Number.isFinite(value) && value > 0)
+        const candidateTotal = candidates.reduce((sum, row) => sum + Number(row.votes), 0)
+        const ballotsCast = candidates
+          .map((candidate) => Number(candidate.ballots_cast))
+          .find((value) => Number.isFinite(value) && value > 0)
         return {
           date,
           stage,
           office,
           district,
           candidates: candidates.sort((a, b) => Number(b.votes) - Number(a.votes)),
-          total: candidates.reduce((sum, row) => sum + Number(row.votes), 0),
+          total: officialTotal ?? candidateTotal,
+          candidateTotal,
+          ballotsCast,
         }
       })
       .sort((a, b) => (
@@ -146,9 +157,16 @@ export default function CountyElectionHistory({ county, rows }: Props) {
                   {contest.district ? ` · District ${contest.district}` : ''}
                 </p>
               </div>
-              <span className="text-xs text-slate-400 whitespace-nowrap">
-                {contest.total.toLocaleString()} votes
-              </span>
+              <div className="text-right whitespace-nowrap">
+                <span className="block text-xs text-slate-400">
+                  {contest.total.toLocaleString()} votes
+                </span>
+                {contest.ballotsCast && (
+                  <span className="block text-[10px] text-slate-500 mt-1">
+                    {contest.ballotsCast.toLocaleString()} ballots cast
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">

@@ -16,9 +16,17 @@ type ElectionRow = {
   source_name: string
   source_url: string
   source_file: string
+  contest_total_votes?: string
+  ballots_cast?: string
 }
 
 let cachedRows: ElectionRow[] | null = null
+let cached2026RawRows: {
+  county: string
+  office: string
+  candidate: string
+  votes: string
+}[] | null = null
 
 function parseCsv(text: string) {
   const rows: string[][] = []
@@ -80,6 +88,47 @@ async function loadRows() {
   return cachedRows
 }
 
+async function load2026RawRows() {
+  if (cached2026RawRows) return cached2026RawRows
+
+  const csvPath = path.join(
+    process.cwd(),
+    'public',
+    'data',
+    '2026-11-03-general-and-special-election-county-results.csv',
+  )
+  const records = parseCsv(await readFile(csvPath, 'utf8'))
+  const headers = records.shift()
+  if (!headers) throw new Error('2026 Georgia SOS source is empty')
+  const normalizedHeaders = headers.map((header) => header.replace(/^\uFEFF/, '').trim())
+
+  cached2026RawRows = records
+    .filter((values) => values.length === normalizedHeaders.length)
+    .map((values) => {
+      const raw = Object.fromEntries(
+        normalizedHeaders.map((header, index) => [header, values[index]]),
+      )
+      return {
+        county: raw.County ?? '',
+        office: raw['Office Name'] ?? '',
+        candidate: raw['Ballot Name'] ?? '',
+        votes: raw.Total ?? '',
+      }
+    })
+  return cached2026RawRows
+}
+
+function rawOfficeMatches(consolidatedOffice: string, rawOffice: string, district: string) {
+  if (consolidatedOffice === 'US Senate') return rawOffice === 'US Senate'
+  if (consolidatedOffice === 'Governor') return rawOffice === 'Governor'
+  if (consolidatedOffice === 'US House of Representatives' || consolidatedOffice === 'US House') {
+    return rawOffice.startsWith('US House of Representatives') && (
+      !district || rawOffice.endsWith(`District ${district}`)
+    )
+  }
+  return false
+}
+
 export async function GET(request: NextRequest) {
   const county = request.nextUrl.searchParams.get('county')
   if (!county) {
@@ -94,9 +143,36 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'County not found' }, { status: 404 })
   }
 
+  const raw2026Rows = await load2026RawRows()
+  const augmentedRows = rows.map((row) => {
+    if (row.election_year !== '2026' || row.stage !== 'general') return row
+
+    const countyName = decodedCounty.toLocaleLowerCase()
+    const rawCountyRows = raw2026Rows.filter((rawRow) => {
+      const rawCounty = String(rawRow.county ?? '').replace(/\s+County$/i, '').trim()
+      return rawCounty.toLocaleLowerCase() === countyName
+    })
+    const matchingRows = rawCountyRows.filter((rawRow) => {
+      const rawOffice = String(rawRow.office ?? '')
+      return rawOfficeMatches(row.office, rawOffice, row.district)
+    })
+    const totalRow = matchingRows.find((rawRow) =>
+      String(rawRow.candidate ?? '').toLocaleLowerCase() === 'total votes'
+    )
+    const ballotsRow = matchingRows.find((rawRow) =>
+      String(rawRow.candidate ?? '').toLocaleLowerCase() === 'ballots cast'
+    )
+
+    return {
+      ...row,
+      contest_total_votes: totalRow?.votes,
+      ballots_cast: ballotsRow?.votes,
+    }
+  })
+
   return NextResponse.json({
-    county: rows[0].county,
-    county_fips: rows[0].county_fips,
-    rows,
+    county: augmentedRows[0].county,
+    county_fips: augmentedRows[0].county_fips,
+    rows: augmentedRows,
   })
 }
