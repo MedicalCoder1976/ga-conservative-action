@@ -18,6 +18,9 @@ type ElectionRow = {
   source_file: string
   contest_total_votes?: string
   ballots_cast?: string
+  statewide_democrat_votes?: string
+  statewide_republican_votes?: string
+  statewide_total_votes?: string
 }
 
 let cachedRows: ElectionRow[] | null = null
@@ -170,9 +173,49 @@ export async function GET(request: NextRequest) {
     }
   })
 
+  const statewide2026 = (await loadRows()).filter(
+    (row) => row.election_year === '2026' && row.stage === 'general',
+  )
+  const senateStatewide = statewide2026
+    .filter((row) => row.office === 'US Senate')
+    .reduce((totals, row) => {
+      totals.total += Number(row.votes)
+      if (row.party === 'DEMOCRAT') totals.democrat += Number(row.votes)
+      if (row.party === 'REPUBLICAN') totals.republican += Number(row.votes)
+      return totals
+    }, { total: 0, democrat: 0, republican: 0 })
+  const governorStatewide = statewide2026
+    .filter((row) => row.office === 'Governor')
+    .reduce((totals, row) => {
+      totals.total += Number(row.votes)
+      if (row.party === 'DEMOCRAT') totals.democrat += Number(row.votes)
+      if (row.party === 'REPUBLICAN') totals.republican += Number(row.votes)
+      return totals
+    }, { total: 0, democrat: 0, republican: 0 })
+
+  const statewideByOffice = {
+    'US Senate': senateStatewide,
+    Governor: governorStatewide,
+  }
+  const rowsWithStatewideContext = augmentedRows.map((row) => {
+    if (row.election_year !== '2026' || row.stage !== 'general') return row
+    const statewide = statewideByOffice[row.office as keyof typeof statewideByOffice]
+    if (!statewide) return row
+    return {
+      ...row,
+      statewide_democrat_votes: String(statewide.democrat),
+      statewide_republican_votes: String(statewide.republican),
+      statewide_total_votes: String(statewide.total),
+    }
+  })
+
   return NextResponse.json({
-    county: augmentedRows[0].county,
-    county_fips: augmentedRows[0].county_fips,
-    rows: augmentedRows,
+    county: rowsWithStatewideContext[0].county,
+    county_fips: rowsWithStatewideContext[0].county_fips,
+    rows: rowsWithStatewideContext,
+    statewide2026: {
+      senate: senateStatewide,
+      governor: governorStatewide,
+    },
   })
 }

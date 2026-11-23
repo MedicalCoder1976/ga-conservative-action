@@ -15,6 +15,9 @@ type ElectionRow = {
   source_url: string
   contest_total_votes?: string
   ballots_cast?: string
+  statewide_democrat_votes?: string
+  statewide_republican_votes?: string
+  statewide_total_votes?: string
 }
 
 type Props = {
@@ -89,6 +92,15 @@ export default function CountyElectionHistory({ county, rows }: Props) {
         const ballotsCast = candidates
           .map((candidate) => Number(candidate.ballots_cast))
           .find((value) => Number.isFinite(value) && value > 0)
+        const statewideDemocrat = candidates
+          .map((candidate) => Number(candidate.statewide_democrat_votes))
+          .find((value) => Number.isFinite(value) && value > 0)
+        const statewideRepublican = candidates
+          .map((candidate) => Number(candidate.statewide_republican_votes))
+          .find((value) => Number.isFinite(value) && value > 0)
+        const statewideTotal = candidates
+          .map((candidate) => Number(candidate.statewide_total_votes))
+          .find((value) => Number.isFinite(value) && value > 0)
         return {
           date,
           stage,
@@ -98,6 +110,9 @@ export default function CountyElectionHistory({ county, rows }: Props) {
           total: officialTotal ?? candidateTotal,
           candidateTotal,
           ballotsCast,
+          statewideDemocrat,
+          statewideRepublican,
+          statewideTotal,
         }
       })
       .sort((a, b) => (
@@ -181,7 +196,7 @@ export default function CountyElectionHistory({ county, rows }: Props) {
                         {candidate.candidate}
                       </span>
                       <span className="text-slate-300 whitespace-nowrap">
-                        {Number(candidate.votes).toLocaleString()} · {percentage.toFixed(1)}%
+                        {Number(candidate.votes).toLocaleString()} · {percentage.toFixed(1)}% county
                       </span>
                     </div>
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -195,6 +210,23 @@ export default function CountyElectionHistory({ county, rows }: Props) {
                 )
               })}
             </div>
+
+            {contest.stage === 'general'
+              && Number(contest.date.slice(0, 4)) === 2026
+              && contest.statewideDemocrat
+              && contest.statewideRepublican
+              && contest.statewideTotal && (
+              <div className="mt-5 pt-4 border-t border-slate-700">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">
+                  Georgia statewide
+                </p>
+                <p className="text-xs text-slate-300">
+                  Democrat {((contest.statewideDemocrat / contest.statewideTotal) * 100).toFixed(1)}%
+                  {' · '}
+                  Republican {((contest.statewideRepublican / contest.statewideTotal) * 100).toFixed(1)}%
+                </p>
+              </div>
+            )}
 
             <a
               href={contest.candidates[0].source_url}
