@@ -157,6 +157,29 @@ Sources are the official MIT Election Data + Science Lab precinct return archive
 2016, 2018, 2020, 2022, and 2024. The generator validates that statewide contests cover
 all 159 counties and rejects negative or missing-vote records.
 
+## County Intelligence
+
+Every Georgia county dashboard includes verified county-level community intelligence
+imported from the USA Civ public county dataset. The dataset covers population,
+income, poverty, housing, education, broadband, health, land use, veterans,
+armed-forces residents, faith, and FEMA disaster declarations for all 159 counties.
+
+Refresh the data snapshot with:
+
+```bash
+npm run import:county-intelligence
+```
+
+The importer validates that exactly 159 distinct Georgia county FIPS records are
+present and refuses to generate or fill missing values. The underlying source is:
+
+- https://karpathy.ai/usaciv/data/counties.json
+- ACS, BEA, CDC PLACES, FEMA, NLCD, Census Gazetteer, and other original
+  publisher sources linked by the USA Civ Almanac
+
+The county intelligence panel describes community conditions. It does not infer
+voting behavior or a person's beliefs.
+
 ## 🔐 Security
 
 - Row-level security (RLS) on all tables

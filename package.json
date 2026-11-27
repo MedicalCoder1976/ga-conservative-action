@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:county-intelligence": "python scripts/import_usaciv_counties.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

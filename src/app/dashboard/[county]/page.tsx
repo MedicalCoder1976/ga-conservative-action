@@ -6,9 +6,9 @@ import GuestActivityLogger from '@/components/GuestActivityLogger'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
-import { ArrowLeft, Users, BarChart3, TrendingUp, Calendar, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import CountyElectionHistory from '@/components/CountyElectionHistory'
+import CountyIntelligenceCard from '@/components/CountyIntelligenceCard'
 
 interface CountyData {
   county: any
@@ -274,7 +274,7 @@ function CountyDashboardContent() {
     electionTrends: null,
   })
   const [loading, setLoading] = useState(true)
-  const [showIntel, setShowIntel] = useState(false)
+  const [showIntel, setShowIntel] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
@@ -307,11 +307,8 @@ function CountyDashboardContent() {
     )
   }
 
-  const { county: countyData, election, demographics, polls } = data
+  const { county: countyData, election, polls } = data
   const score = countyData?.activity_score ?? 0
-  const flipPercent = Math.min((score / 256) * 100, 100)
-  const colorIntensity = Math.min(score, 255)
-  const bgColor = `rgb(${colorIntensity}, 0, ${255 - colorIntensity})`
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
@@ -322,9 +319,9 @@ function CountyDashboardContent() {
             <h1 className="text-3xl font-black text-white">{decodedCounty}</h1>
             <p className="text-red-400 font-bold">Score: {score} points</p>
           </div>
-          <a href="/" className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition">
+          <Link href="/" className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition">
             ← Back to Map
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -637,6 +634,8 @@ function CountyDashboardContent() {
 
           {showIntel && (
             <div className="space-y-6 animate-in fade-in duration-300">
+              <CountyIntelligenceCard county={decodedCounty} />
+
               {/* Election Results */}
               {election && (
                 <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-red-500">
@@ -680,57 +679,6 @@ function CountyDashboardContent() {
                       </p>
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Demographics */}
-              {demographics && (
-                <div className="bg-slate-700/50 rounded-lg p-6 border-l-4 border-blue-500">
-                  <h4 className="font-bold text-blue-400 mb-4">Population Profile</h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-400 mb-2">Age Distribution</p>
-                      <div className="text-xs space-y-1">
-                        <div className="flex justify-between">
-                          <span>18-29:</span>
-                          <span className="font-bold">{demographics.age_18_29 || 22}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>30-44:</span>
-                          <span className="font-bold">{demographics.age_30_44 || 27}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>45-64:</span>
-                          <span className="font-bold">{demographics.age_45_64 || 31}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>65+:</span>
-                          <span className="font-bold">{demographics.age_65_plus || 20}%</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-400 mb-2">Race/Ethnicity</p>
-                      <div className="text-xs space-y-1">
-                        <div className="flex justify-between">
-                          <span>White:</span>
-                          <span className="font-bold">{demographics.white || 68}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Black:</span>
-                          <span className="font-bold">{demographics.black || 15}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Hispanic:</span>
-                          <span className="font-bold">{demographics.hispanic || 11}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Other:</span>
-                          <span className="font-bold">{demographics.asian_other || 6}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
